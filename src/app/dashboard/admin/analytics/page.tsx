@@ -24,8 +24,10 @@ import {
     PolarRadiusAxis,
     Radar,
 } from 'recharts';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminAnalyticsPage() {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [subjectStats, setSubjectStats] = useState<any[]>([]);
     const [difficultyStats, setDifficultyStats] = useState<any[]>([]);
@@ -77,7 +79,7 @@ export default function AdminAnalyticsPage() {
                     ['easy', 'medium', 'hard'].map((d) => {
                         const entry = diffMap.get(d) || { correct: 0, total: 0 };
                         return {
-                            difficulty: d === 'easy' ? 'Mudah' : d === 'medium' ? 'Sedang' : 'Sulit',
+                            difficulty: d,
                             rate: entry.total > 0 ? Math.round((entry.correct / entry.total) * 100) : 0,
                             total: entry.total,
                         };
@@ -127,16 +129,16 @@ export default function AdminAnalyticsPage() {
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                     <BarChart3 className="w-6 h-6 text-accent-1" />
-                    Analitik & Item Analysis
+                    {t.adminAnalytics.title}
                 </h1>
-                <p className="text-foreground/40 text-sm mt-1">Metrik performa dan analisis soal</p>
+                <p className="text-foreground/40 text-sm mt-1">{t.adminAnalytics.subtitle}</p>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-6 mb-6">
                 <div className="admin-card p-6">
                     <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                         <Target className="w-4 h-4 text-accent-1" />
-                        Rata-rata per Mapel
+                        {t.adminAnalytics.avgPerSubject}
                     </h2>
                     {subjectStats.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
@@ -151,20 +153,20 @@ export default function AdminAnalyticsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">Belum ada data</div>
+                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
                     )}
                 </div>
 
                 <div className="admin-card p-6">
                     <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-accent-1" />
-                        Tingkat Kebenaran per Kesulitan
+                        {t.adminAnalytics.correctnessRate}
                     </h2>
                     {difficultyStats.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={difficultyStats}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" />
-                                <XAxis dataKey="difficulty" stroke="var(--card-border)" tick={{ fill: 'var(--foreground)', fontSize: 11 }} />
+                                <XAxis dataKey="difficulty" stroke="var(--card-border)" tick={{ fill: 'var(--foreground)', fontSize: 11 }} tickFormatter={(val) => ({ easy: t.adminAnalytics.easy, medium: t.adminAnalytics.medium, hard: t.adminAnalytics.hard }[val as string] || val)} />
                                 <YAxis domain={[0, 100]} stroke="var(--card-border)" tick={{ fill: 'var(--foreground)', fontSize: 11 }} />
                                 <Tooltip
                                     contentStyle={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: '8px', color: 'var(--tooltip-color)', fontSize: '12px' }}
@@ -177,7 +179,7 @@ export default function AdminAnalyticsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">Belum ada data</div>
+                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
                     )}
                 </div>
             </div>
@@ -185,17 +187,17 @@ export default function AdminAnalyticsPage() {
             <div className="admin-card p-6">
                 <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                     <Users className="w-4 h-4 text-accent-1" />
-                    Top 10 Siswa Berperforma Tinggi
+                    {t.adminAnalytics.topStudents}
                 </h2>
                 {topStudents.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full admin-table">
                             <thead>
                                 <tr>
-                                    <th className="px-4 py-3 text-left">#</th>
-                                    <th className="px-4 py-3 text-left">Nama</th>
-                                    <th className="px-4 py-3 text-center">Rata-rata</th>
-                                    <th className="px-4 py-3 text-center">Try Out</th>
+                                    <th className="px-4 py-3 text-left">{t.adminAnalytics.rank}</th>
+                                    <th className="px-4 py-3 text-left">{t.common.name}</th>
+                                    <th className="px-4 py-3 text-center">{t.common.average}</th>
+                                    <th className="px-4 py-3 text-center">{t.nav.tryout}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -217,7 +219,7 @@ export default function AdminAnalyticsPage() {
                         </table>
                     </div>
                 ) : (
-                    <div className="text-center py-12 text-foreground/30 text-sm">Belum ada data</div>
+                    <div className="text-center py-12 text-foreground/30 text-sm">{t.common.noData}</div>
                 )}
             </div>
         </motion.div>

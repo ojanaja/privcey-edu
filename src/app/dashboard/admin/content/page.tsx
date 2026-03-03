@@ -18,6 +18,7 @@ import {
 import type { Subject, VodContent, EmodContent, LiveClass } from '@/types/database';
 import Image from 'next/image';
 import { formatDateTime, cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 type Tab = 'vod' | 'emod' | 'live';
 
@@ -29,6 +30,7 @@ function extractYoutubeId(url: string): string {
 }
 
 export default function AdminContentPage() {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
     const [tab, setTab] = useState<Tab>('vod');
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -129,7 +131,7 @@ export default function AdminContentPage() {
     };
 
     const deleteVod = async (id: string) => {
-        if (!confirm('Hapus video ini?')) return;
+        if (!confirm(t.adminContent.confirmDeleteVideo)) return;
         const supabase = createClient();
         await supabase.from('vod_content').delete().eq('id', id);
         setVods((prev) => prev.filter((v) => v.id !== id));
@@ -166,7 +168,7 @@ export default function AdminContentPage() {
     };
 
     const deleteEmod = async (id: string) => {
-        if (!confirm('Hapus modul ini?')) return;
+        if (!confirm(t.adminContent.confirmDeleteModule)) return;
         const supabase = createClient();
         await supabase.from('emod_content').delete().eq('id', id);
         setEmods((prev) => prev.filter((e) => e.id !== id));
@@ -204,7 +206,7 @@ export default function AdminContentPage() {
     };
 
     const deleteLive = async (id: string) => {
-        if (!confirm('Hapus live class ini?')) return;
+        if (!confirm(t.adminContent.confirmDeleteLive)) return;
         const supabase = createClient();
         await supabase.from('live_classes').delete().eq('id', id);
         setLiveClasses((prev) => prev.filter((l) => l.id !== id));
@@ -213,11 +215,11 @@ export default function AdminContentPage() {
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
 
     const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
-        { key: 'vod', label: 'Video (VOD)', icon: <Video className="w-4 h-4" />, count: vods.length },
-        { key: 'emod', label: 'E-Modul', icon: <BookOpen className="w-4 h-4" />, count: emods.length },
+        { key: 'vod', label: t.adminContent.tabs.vod, icon: <Video className="w-4 h-4" />, count: vods.length },
+        { key: 'emod', label: t.adminContent.tabs.emod, icon: <BookOpen className="w-4 h-4" />, count: emods.length },
         {
             key: 'live',
-            label: 'Live Class',
+            label: t.adminContent.tabs.liveClass,
             icon: <Radio className="w-4 h-4" />,
             count: liveClasses.length,
         },
@@ -228,10 +230,10 @@ export default function AdminContentPage() {
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                     <Video className="w-6 h-6 text-accent-1" />
-                    Manajemen Konten
+                    {t.adminContent.title}
                 </h1>
                 <p className="text-foreground/40 text-sm mt-1">
-                    Kelola Video, E-Modul, dan Live Class — disimpan di Supabase
+                    {t.adminContent.subtitle}
                 </p>
             </div>
 
@@ -259,7 +261,7 @@ export default function AdminContentPage() {
                     <div className="flex justify-end mb-4">
                         <Button size="sm" onClick={() => setShowVodForm(!showVodForm)}>
                             <Plus className="w-4 h-4" />
-                            Tambah Video
+                            {t.adminContent.addVideo}
                         </Button>
                     </div>
 
@@ -270,10 +272,10 @@ export default function AdminContentPage() {
                             className="mb-6"
                         >
                             <div className="admin-card p-6">
-                                <h2 className="text-base font-semibold text-foreground mb-4">Video Baru</h2>
+                                <h2 className="text-base font-semibold text-foreground mb-4">{t.adminContent.newVideo}</h2>
                                 <form onSubmit={createVod} className="grid md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Judul</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.title}</label>
                                         <input
                                             type="text"
                                             required
@@ -283,7 +285,7 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">YouTube URL</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.youtubeUrl}</label>
                                         <input
                                             type="url"
                                             required
@@ -294,13 +296,13 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Mapel</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.subject}</label>
                                         <select
                                             value={vodForm.subject_id}
                                             onChange={(e) => setVodForm({ ...vodForm, subject_id: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm"
                                         >
-                                            <option value="">Pilih Mapel</option>
+                                            <option value="">{t.common.selectSubject}</option>
                                             {subjects.map((s) => (
                                                 <option key={s.id} value={s.id}>
                                                     {s.name}
@@ -309,7 +311,7 @@ export default function AdminContentPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Durasi</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.durationLabel}</label>
                                         <input
                                             type="text"
                                             value={vodForm.duration}
@@ -319,7 +321,7 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs text-foreground/40 mb-1">Deskripsi</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.description}</label>
                                         <textarea
                                             value={vodForm.description}
                                             onChange={(e) => setVodForm({ ...vodForm, description: e.target.value })}
@@ -328,9 +330,9 @@ export default function AdminContentPage() {
                                     </div>
                                     <div className="md:col-span-2 flex gap-3 justify-end">
                                         <Button variant="ghost" onClick={() => setShowVodForm(false)}>
-                                            Batal
+                                            {t.common.cancel}
                                         </Button>
-                                        <Button type="submit">Simpan</Button>
+                                        <Button type="submit">{t.common.save}</Button>
                                     </div>
                                 </form>
                             </div>
@@ -367,7 +369,7 @@ export default function AdminContentPage() {
                                     </div>
                                     <div className="flex items-center gap-1 flex-shrink-0">
                                         <Badge variant={vod.is_active ? 'success' : 'danger'}>
-                                            {vod.is_active ? 'Aktif' : 'Off'}
+                                            {vod.is_active ? t.common.active : t.common.off}
                                         </Badge>
                                         <button
                                             onClick={() => toggleVod(vod.id, vod.is_active)}
@@ -387,7 +389,7 @@ export default function AdminContentPage() {
                         ))}
                         {vods.length === 0 && (
                             <div className="admin-card text-center py-12 text-foreground/30 text-sm">
-                                Belum ada video. Klik &quot;Tambah Video&quot; untuk menambahkan.
+                                {t.adminContent.noVideos}
                             </div>
                         )}
                     </div>
@@ -399,7 +401,7 @@ export default function AdminContentPage() {
                     <div className="flex justify-end mb-4">
                         <Button size="sm" onClick={() => setShowEmodForm(!showEmodForm)}>
                             <Plus className="w-4 h-4" />
-                            Tambah Modul
+                            {t.adminContent.addModule}
                         </Button>
                     </div>
 
@@ -410,10 +412,10 @@ export default function AdminContentPage() {
                             className="mb-6"
                         >
                             <div className="admin-card p-6">
-                                <h2 className="text-base font-semibold text-foreground mb-4">Modul Baru</h2>
+                                <h2 className="text-base font-semibold text-foreground mb-4">{t.adminContent.newModule}</h2>
                                 <form onSubmit={createEmod} className="grid md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Judul</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.title}</label>
                                         <input
                                             type="text"
                                             required
@@ -423,7 +425,7 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Google Drive URL</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.driveUrl}</label>
                                         <input
                                             type="url"
                                             required
@@ -434,13 +436,13 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Mapel</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.subject}</label>
                                         <select
                                             value={emodForm.subject_id}
                                             onChange={(e) => setEmodForm({ ...emodForm, subject_id: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm"
                                         >
-                                            <option value="">Pilih Mapel</option>
+                                            <option value="">{t.common.selectSubject}</option>
                                             {subjects.map((s) => (
                                                 <option key={s.id} value={s.id}>
                                                     {s.name}
@@ -449,17 +451,17 @@ export default function AdminContentPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Bab</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.chapter}</label>
                                         <input
                                             type="text"
                                             value={emodForm.chapter}
                                             onChange={(e) => setEmodForm({ ...emodForm, chapter: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm"
-                                            placeholder="Bab 1"
+                                            placeholder={t.adminContent.chapterPlaceholder}
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs text-foreground/40 mb-1">Deskripsi</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.description}</label>
                                         <textarea
                                             value={emodForm.description}
                                             onChange={(e) => setEmodForm({ ...emodForm, description: e.target.value })}
@@ -468,9 +470,9 @@ export default function AdminContentPage() {
                                     </div>
                                     <div className="md:col-span-2 flex gap-3 justify-end">
                                         <Button variant="ghost" onClick={() => setShowEmodForm(false)}>
-                                            Batal
+                                            {t.common.cancel}
                                         </Button>
-                                        <Button type="submit">Simpan</Button>
+                                        <Button type="submit">{t.common.save}</Button>
                                     </div>
                                 </form>
                             </div>
@@ -496,7 +498,7 @@ export default function AdminContentPage() {
                                     </div>
                                     <div className="flex items-center gap-1 flex-shrink-0">
                                         <Badge variant={emod.is_active ? 'success' : 'danger'}>
-                                            {emod.is_active ? 'Aktif' : 'Off'}
+                                            {emod.is_active ? t.common.active : t.common.off}
                                         </Badge>
                                         <a
                                             href={emod.drive_url}
@@ -528,7 +530,7 @@ export default function AdminContentPage() {
                         ))}
                         {emods.length === 0 && (
                             <div className="admin-card text-center py-12 text-foreground/30 text-sm">
-                                Belum ada modul. Klik &quot;Tambah Modul&quot; untuk menambahkan.
+                                {t.adminContent.noModules}
                             </div>
                         )}
                     </div>
@@ -540,7 +542,7 @@ export default function AdminContentPage() {
                     <div className="flex justify-end mb-4">
                         <Button size="sm" onClick={() => setShowLiveForm(!showLiveForm)}>
                             <Plus className="w-4 h-4" />
-                            Jadwalkan Live
+                            {t.adminContent.scheduleLive}
                         </Button>
                     </div>
 
@@ -551,10 +553,10 @@ export default function AdminContentPage() {
                             className="mb-6"
                         >
                             <div className="admin-card p-6">
-                                <h2 className="text-base font-semibold text-foreground mb-4">Live Class Baru</h2>
+                                <h2 className="text-base font-semibold text-foreground mb-4">{t.adminContent.newLiveClass}</h2>
                                 <form onSubmit={createLive} className="grid md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Judul</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.title}</label>
                                         <input
                                             type="text"
                                             required
@@ -564,7 +566,7 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Link Meet / Zoom</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.meetLink}</label>
                                         <input
                                             type="url"
                                             required
@@ -575,7 +577,7 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Jadwal</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminContent.schedule}</label>
                                         <input
                                             type="datetime-local"
                                             required
@@ -585,13 +587,13 @@ export default function AdminContentPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Mapel</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.subject}</label>
                                         <select
                                             value={liveForm.subject_id}
                                             onChange={(e) => setLiveForm({ ...liveForm, subject_id: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm"
                                         >
-                                            <option value="">Pilih Mapel</option>
+                                            <option value="">{t.common.selectSubject}</option>
                                             {subjects.map((s) => (
                                                 <option key={s.id} value={s.id}>
                                                     {s.name}
@@ -600,7 +602,7 @@ export default function AdminContentPage() {
                                         </select>
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs text-foreground/40 mb-1">Deskripsi</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.common.description}</label>
                                         <textarea
                                             value={liveForm.description}
                                             onChange={(e) => setLiveForm({ ...liveForm, description: e.target.value })}
@@ -609,9 +611,9 @@ export default function AdminContentPage() {
                                     </div>
                                     <div className="md:col-span-2 flex gap-3 justify-end">
                                         <Button variant="ghost" onClick={() => setShowLiveForm(false)}>
-                                            Batal
+                                            {t.common.cancel}
                                         </Button>
-                                        <Button type="submit">Simpan</Button>
+                                        <Button type="submit">{t.common.save}</Button>
                                     </div>
                                 </form>
                             </div>
@@ -651,7 +653,7 @@ export default function AdminContentPage() {
                                         </div>
                                         <div className="flex items-center gap-1 flex-shrink-0">
                                             <Badge variant={lc.is_active ? 'success' : 'danger'}>
-                                                {lc.is_active ? 'Aktif' : 'Off'}
+                                                {lc.is_active ? t.common.active : t.common.off}
                                             </Badge>
                                             <a
                                                 href={lc.meet_url}
@@ -684,7 +686,7 @@ export default function AdminContentPage() {
                         })}
                         {liveClasses.length === 0 && (
                             <div className="admin-card text-center py-12 text-foreground/30 text-sm">
-                                Belum ada live class. Klik &quot;Jadwalkan Live&quot; untuk menambahkan.
+                                {t.adminContent.noLiveClasses}
                             </div>
                         )}
                     </div>

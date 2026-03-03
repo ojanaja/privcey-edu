@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { StatCard, LoadingSpinner } from '@/components/ui';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTranslation } from '@/lib/i18n';
 import { FileText, Users, CheckCircle2, Clock } from 'lucide-react';
 
 export default function TutorDashboard() {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
     const [stats, setStats] = useState({
         myTryouts: 0,
@@ -76,24 +78,24 @@ export default function TutorDashboard() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-foreground">
-                    Halo, {user?.full_name?.split(' ')[0]} 👋
+                    {t.tutorDashboard.hello}, {user?.full_name?.split(' ')[0]} 👋
                 </h1>
-                <p className="text-foreground/40 text-sm mt-1">Tutor Dashboard</p>
+                <p className="text-foreground/40 text-sm mt-1">{t.tutorDashboard.subtitle}</p>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
                 <StatCard
-                    label="Try Out Saya"
+                    label={t.tutorDashboard.myTryouts}
                     value={stats.myTryouts}
                     icon={<FileText className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Total Pengerjaan"
+                    label={t.tutorDashboard.totalAttempts}
                     value={stats.totalAttempts}
                     icon={<Users className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Bank Soal"
+                    label={t.tutorDashboard.questionBank}
                     value={stats.totalQuestions}
                     icon={<CheckCircle2 className="w-5 h-5" />}
                 />
@@ -102,16 +104,16 @@ export default function TutorDashboard() {
             <div className="admin-card p-6">
                 <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-accent-1" />
-                    Pengerjaan Terbaru
+                    {t.tutorDashboard.recentAttempts}
                 </h2>
                 {recentAttempts.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full admin-table">
                             <thead>
                                 <tr>
-                                    <th className="px-4 py-3 text-left">Siswa</th>
+                                    <th className="px-4 py-3 text-left">{t.common.student}</th>
                                     <th className="px-4 py-3 text-left">Try Out</th>
-                                    <th className="px-4 py-3 text-center">Skor</th>
+                                    <th className="px-4 py-3 text-center">{t.common.score}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,7 +137,7 @@ export default function TutorDashboard() {
                     </div>
                 ) : (
                     <div className="text-center py-8 text-foreground/30 text-sm">
-                        Belum ada pengerjaan
+                        {t.tutorDashboard.noAttempts}
                     </div>
                 )}
             </div>

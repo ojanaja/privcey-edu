@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth-store';
 import { LoadingSpinner, Badge } from '@/components/ui';
+import { useTranslation } from '@/lib/i18n';
 import { BarChart3, Search } from 'lucide-react';
 
 export default function TutorScoresPage() {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
     const [attempts, setAttempts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -55,16 +57,16 @@ export default function TutorScoresPage() {
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                     <BarChart3 className="w-6 h-6 text-accent-1" />
-                    Nilai Siswa
+                    {t.tutorScores.title}
                 </h1>
-                <p className="text-foreground/40 text-sm mt-1">{attempts.length} pengerjaan</p>
+                <p className="text-foreground/40 text-sm mt-1">{attempts.length} {t.tutorScores.subtitle}</p>
             </div>
 
             <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                 <input
                     type="text"
-                    placeholder="Cari nama siswa atau try out..."
+                    placeholder={t.tutorScores.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="admin-input w-full pl-10 pr-4 py-2 text-sm max-w-md"
@@ -76,10 +78,10 @@ export default function TutorScoresPage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Siswa</th>
+                                <th className="px-4 py-3 text-left">{t.common.student}</th>
                                 <th className="px-4 py-3 text-left">Try Out</th>
-                                <th className="px-4 py-3 text-center">Skor</th>
-                                <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-center">{t.common.score}</th>
+                                <th className="px-4 py-3 text-center">{t.common.status}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -96,7 +98,7 @@ export default function TutorScoresPage() {
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <Badge variant={passed ? 'success' : 'danger'}>
-                                                {passed ? 'Lulus' : 'Belum Lulus'}
+                                                {passed ? t.tutorScores.passed : t.tutorScores.failed}
                                             </Badge>
                                         </td>
                                     </tr>
@@ -106,7 +108,7 @@ export default function TutorScoresPage() {
                     </table>
                 </div>
                 {filteredAttempts.length === 0 && (
-                    <div className="text-center py-12 text-foreground/30 text-sm">Tidak ada data</div>
+                    <div className="text-center py-12 text-foreground/30 text-sm">{t.tutorScores.noData}</div>
                 )}
             </div>
         </motion.div>

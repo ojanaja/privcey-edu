@@ -7,6 +7,7 @@ import { GlassCard, Button } from '@/components/ui';
 import { GraduationCap } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 function GoogleIcon() {
     return (
@@ -35,6 +36,7 @@ function LoginContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const searchParams = useSearchParams();
+    const { t } = useTranslation();
 
     const authError = searchParams.get('error');
 
@@ -55,7 +57,7 @@ function LoginContent() {
         });
 
         if (authErr) {
-            setError('Gagal login dengan Google. Silakan coba lagi.');
+            setError(t.auth.login.googleError);
             setIsLoading(false);
         }
     };
@@ -81,7 +83,7 @@ function LoginContent() {
                         <GraduationCap className="w-8 h-8 text-white" />
                     </motion.div>
                     <h1 className="text-3xl font-bold text-accent-1 mb-2">Privcey Edu</h1>
-                    <p className="text-foreground/40 text-sm">Platform belajar online terbaik</p>
+                    <p className="text-foreground/40 text-sm">{t.auth.login.subtitle}</p>
                 </div>
 
                 <GlassCard hoverable={false} padding="lg">
@@ -92,14 +94,14 @@ function LoginContent() {
                                 animate={{ opacity: 1, height: 'auto' }}
                                 className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
                             >
-                                {error || 'Terjadi kesalahan saat login. Silakan coba lagi.'}
+                                {error || t.auth.login.authError}
                             </motion.div>
                         )}
 
                         <div className="text-center mb-2">
-                            <h2 className="text-lg font-semibold text-foreground mb-1">Selamat Datang!</h2>
+                            <h2 className="text-lg font-semibold text-foreground mb-1">{t.auth.login.title}</h2>
                             <p className="text-sm text-foreground/40">
-                                Masuk atau daftar menggunakan akun Google-mu
+                                {t.auth.login.subtitle}
                             </p>
                         </div>
 
@@ -111,11 +113,11 @@ function LoginContent() {
                             size="lg"
                         >
                             <GoogleIcon />
-                            Lanjutkan dengan Google
+                            {t.auth.login.continueWithGoogle}
                         </Button>
 
                         <p className="text-xs text-foreground/25 text-center leading-relaxed">
-                            Dengan melanjutkan, kamu menyetujui ketentuan layanan dan kebijakan privasi Privcey Edu.
+                            {t.auth.login.disclaimer}
                         </p>
                     </div>
                 </GlassCard>

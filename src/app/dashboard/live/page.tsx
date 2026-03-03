@@ -8,9 +8,11 @@ import { GlassCard, Badge, LoadingSpinner, Button } from '@/components/ui';
 import { Radio, Calendar, Clock, ExternalLink, User } from 'lucide-react';
 import type { LiveClass } from '@/types/database';
 import { formatDateTime } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function LiveClassPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -55,15 +57,15 @@ export default function LiveClassPage() {
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                     <Radio className="w-6 h-6 text-accent-1" />
-                    Live Class
+                    {t.liveClassPage.title}
                 </h1>
-                <p className="text-foreground/40 text-sm mt-1">Jadwal kelas online via Google Meet / Zoom</p>
+                <p className="text-foreground/40 text-sm mt-1">{t.liveClassPage.subtitle}</p>
             </div>
 
             {upcoming.length > 0 && (
                 <div className="mb-8">
                     <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider mb-4">
-                        Akan Datang
+                        {t.liveClassPage.upcoming}
                     </h2>
                     <div className="space-y-4">
                         {upcoming.map((lc, idx) => {
@@ -114,7 +116,7 @@ export default function LiveClassPage() {
                                                             hour: '2-digit',
                                                             minute: '2-digit',
                                                         })}{' '}
-                                                        WIB
+                                                        {t.liveClassPage.timezone}
                                                     </span>
                                                     {lc.tutor && (
                                                         <span className="text-xs text-foreground/30 flex items-center gap-1">
@@ -134,7 +136,7 @@ export default function LiveClassPage() {
                                                 className="flex-shrink-0"
                                             >
                                                 <ExternalLink className="w-4 h-4" />
-                                                {isLive ? 'Gabung Sekarang' : 'Buka Link'}
+                                                {isLive ? t.liveClassPage.joinNow : t.liveClassPage.openLink}
                                             </Button>
                                         </div>
                                     </GlassCard>
@@ -148,7 +150,7 @@ export default function LiveClassPage() {
             {past.length > 0 && (
                 <div>
                     <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider mb-4">
-                        Sudah Berlalu
+                        {t.liveClassPage.past}
                     </h2>
                     <div className="space-y-3">
                         {past.map((lc, idx) => (
@@ -169,7 +171,7 @@ export default function LiveClassPage() {
                                                 {formatDateTime(lc.scheduled_at)}
                                             </span>
                                         </div>
-                                        <Badge>Selesai</Badge>
+                                        <Badge>{t.common.finished}</Badge>
                                     </div>
                                 </GlassCard>
                             </motion.div>
@@ -181,9 +183,9 @@ export default function LiveClassPage() {
             {liveClasses.length === 0 && (
                 <GlassCard hoverable={false} className="text-center py-16">
                     <Radio className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground/50 mb-2">Belum Ada Jadwal</h3>
+                    <h3 className="text-lg font-medium text-foreground/50 mb-2">{t.liveClassPage.noSchedule}</h3>
                     <p className="text-sm text-foreground/30">
-                        Jadwal live class akan muncul di sini saat tutor atau admin menjadwalkannya.
+                        {t.liveClassPage.noScheduleDesc}
                     </p>
                 </GlassCard>
             )}

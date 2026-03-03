@@ -17,6 +17,7 @@ import {
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 export function ExamInterface() {
     const {
@@ -41,6 +42,7 @@ export function ExamInterface() {
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { t } = useTranslation();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const currentQuestion = questions[currentIndex];
@@ -74,29 +76,26 @@ export function ExamInterface() {
                 answered_at: new Date().toISOString(),
             }));
 
-            await supabase.from('student_answers').upsert(answerRows, {
-                onConflict: 'attempt_id,question_id',
-            });
+            const { error: answerError } = await supabase
+                .from('student_answers')
+                .upsert(answerRows, { onConflict: 'attempt_id,question_id' });
+
+            if (answerError) {
+                console.error('Failed to save answers:', answerError);
+                for (const row of answerRows) {
+                    await supabase.from('student_answers').insert(row);
+                }
+            }
         }
 
-        const unansweredQuestions = questions.filter((q) => !answers.has(q.id));
-        if (unansweredQuestions.length > 0) {
-            const emptyRows = unansweredQuestions.map((q) => ({
-                attempt_id: attemptId,
-                question_id: q.id,
-                selected_answer: null,
-                answered_at: null,
-            }));
-
-            await supabase.from('student_answers').upsert(emptyRows, {
-                onConflict: 'attempt_id,question_id',
-            });
-        }
-
-        await supabase
+        const { error: submitError } = await supabase
             .from('tryout_attempts')
             .update({ is_submitted: true })
             .eq('id', attemptId);
+
+        if (submitError) {
+            console.error('Failed to submit attempt:', submitError);
+        }
 
         submitExam();
         setIsSubmitting(false);
@@ -108,13 +107,13 @@ export function ExamInterface() {
             <div className="flex items-center justify-center min-h-[60vh]">
                 <GlassCard className="max-w-md w-full text-center" padding="lg">
                     <div className="text-4xl mb-4">📝</div>
-                    <h2 className="text-xl font-bold text-foreground mb-2">Siap memulai ujian?</h2>
-                    <p className="text-foreground/50 text-sm mb-2">{questions.length} soal</p>
+                    <h2 className="text-xl font-bold text-foreground mb-2">{t.exam.readyTitle}</h2>
+                    <p className="text-foreground/50 text-sm mb-2">{questions.length} {t.exam.questionsCount}</p>
                     <p className="text-foreground/50 text-sm mb-6">
-                        Durasi: {formatTimer(useExamStore.getState().duration)}
+                        {t.exam.durationLabel} {formatTimer(useExamStore.getState().duration)}
                     </p>
                     <Button onClick={startExam} size="lg" className="w-full">
-                        Mulai Ujian
+                        {t.exam.startExam}
                     </Button>
                 </GlassCard>
             </div>
@@ -132,16 +131,16 @@ export function ExamInterface() {
                     >
                         <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
                     </motion.div>
-                    <h2 className="text-xl font-bold text-foreground mb-2">Ujian Selesai! 🎉</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-2">{t.exam.examDone}</h2>
                     <p className="text-foreground/50 text-sm mb-4">
-                        Jawaban kamu telah dikumpulkan. Hasil akan segera tersedia.
+                        {t.exam.answersCollected}
                     </p>
                     <div className="flex gap-3 text-sm text-foreground/40 justify-center mb-6">
-                        <span>✅ Dijawab: {answers.size}</span>
-                        <span>⬜ Kosong: {questions.length - answers.size}</span>
+                        <span>{t.exam.answeredCount} {answers.size}</span>
+                        <span>{t.exam.emptyCount} {questions.length - answers.size}</span>
                     </div>
                     <Button onClick={() => window.location.href = '/dashboard/tryout'} className="w-full">
-                        Kembali ke Daftar Try Out
+                        {t.exam.backToTryoutList}
                     </Button>
                 </GlassCard>
             </div>
@@ -158,7 +157,7 @@ export function ExamInterface() {
                             {formatTimer(timeRemaining)}
                         </Badge>
                         <span className="text-sm text-foreground/40">
-                            Soal {currentIndex + 1} / {questions.length}
+                            {t.exam.questionProgress} {currentIndex + 1} / {questions.length}
                         </span>
                     </div>
                     <Button
@@ -167,7 +166,7 @@ export function ExamInterface() {
                         onClick={() => setShowConfirm(true)}
                     >
                         <Send className="w-3.5 h-3.5" />
-                        Kumpulkan
+                        {t.exam.submitButton}
                     </Button>
                 </div>
 
@@ -192,7 +191,7 @@ export function ExamInterface() {
                                     {currentQuestion?.question_image_url && (
                                         <Image
                                             src={currentQuestion.question_image_url}
-                                            alt="Gambar soal"
+                                            alt={t.exam.questionImage}
                                             width={600}
                                             height={400}
                                             className="mt-4 rounded-xl max-w-full max-h-64 object-contain"
@@ -246,7 +245,7 @@ export function ExamInterface() {
                                     disabled={currentIndex === 0}
                                 >
                                     <ChevronLeft className="w-4 h-4" />
-                                    Sebelumnya
+                                    {t.exam.prevButton}
                                 </Button>
                                 <Button
                                     variant="ghost"
@@ -257,7 +256,7 @@ export function ExamInterface() {
                                     )}
                                 >
                                     <Flag className="w-4 h-4" />
-                                    {currentQuestion && flaggedQuestions.has(currentQuestion.id) ? 'Ditandai' : 'Tandai'}
+                                    {currentQuestion && flaggedQuestions.has(currentQuestion.id) ? t.exam.flagged : t.exam.flag}
                                 </Button>
                                 <Button
                                     variant="ghost"
@@ -265,7 +264,7 @@ export function ExamInterface() {
                                     onClick={nextQuestion}
                                     disabled={currentIndex === questions.length - 1}
                                 >
-                                    Selanjutnya
+                                    {t.exam.nextButton}
                                     <ChevronRight className="w-4 h-4" />
                                 </Button>
                             </div>
@@ -276,7 +275,7 @@ export function ExamInterface() {
 
             <div className="lg:w-64 flex-shrink-0">
                 <GlassCard hoverable={false} padding="md" className="lg:sticky lg:top-6">
-                    <h3 className="text-sm font-medium text-foreground/60 mb-4">Navigasi Soal</h3>
+                    <h3 className="text-sm font-medium text-foreground/60 mb-4">{t.exam.questionNav}</h3>
                     <div className="grid grid-cols-5 gap-2">
                         {questions.map((q, idx) => {
                             const isAnswered = answers.has(q.id);
@@ -308,15 +307,15 @@ export function ExamInterface() {
                     <div className="mt-4 pt-4 border-t border-foreground/5 space-y-2 text-xs text-foreground/40">
                         <div className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded bg-green-500/20 border border-green-500/30" />
-                            Dijawab ({answers.size})
+                            {t.common.answered} ({answers.size})
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded bg-foreground/5 border border-foreground/[0.06]" />
-                            Belum ({questions.length - answers.size})
+                            {t.common.notYet} ({questions.length - answers.size})
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded bg-yellow-400" />
-                            Ditandai ({flaggedQuestions.size})
+                            {t.common.flagged} ({flaggedQuestions.size})
                         </div>
                     </div>
                 </GlassCard>
@@ -340,12 +339,12 @@ export function ExamInterface() {
                             <GlassCard hoverable={false} padding="lg" className="max-w-sm w-full mx-4">
                                 <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
                                 <h3 className="text-lg font-bold text-foreground text-center mb-2">
-                                    Kumpulkan Jawaban?
+                                    {t.exam.submitConfirmTitle}
                                 </h3>
                                 <div className="text-sm text-foreground/50 text-center mb-6 space-y-1">
-                                    <p>Dijawab: {answers.size} dari {questions.length} soal</p>
-                                    <p>Belum dijawab: {questions.length - answers.size} soal</p>
-                                    <p>Sisa waktu: {formatTimer(timeRemaining)}</p>
+                                    <p>{t.exam.submitConfirmAnswered} {answers.size} / {questions.length}</p>
+                                    <p>{t.exam.submitConfirmUnanswered} {questions.length - answers.size}</p>
+                                    <p>{t.exam.submitConfirmTime} {formatTimer(timeRemaining)}</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <Button
@@ -353,14 +352,14 @@ export function ExamInterface() {
                                         className="flex-1"
                                         onClick={() => setShowConfirm(false)}
                                     >
-                                        Batal
+                                        {t.common.cancel}
                                     </Button>
                                     <Button
                                         className="flex-1"
                                         isLoading={isSubmitting}
                                         onClick={handleSubmit}
                                     >
-                                        Ya, Kumpulkan
+                                        {t.exam.yesSubmit}
                                     </Button>
                                 </div>
                             </GlassCard>

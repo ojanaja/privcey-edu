@@ -8,8 +8,10 @@ import { Button, Badge, LoadingSpinner } from '@/components/ui';
 import { Megaphone, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import type { Announcement, ClassGroup } from '@/types/database';
 import { formatDateTime } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminAnnouncementsPage() {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [classes, setClasses] = useState<ClassGroup[]>([]);
@@ -73,7 +75,7 @@ export default function AdminAnnouncementsPage() {
     };
 
     const deleteAnnouncement = async (id: string) => {
-        if (!confirm('Hapus pengumuman ini?')) return;
+        if (!confirm(t.adminAnnouncements.confirmDelete)) return;
         const supabase = createClient();
         await supabase.from('announcements').delete().eq('id', id);
         setAnnouncements((prev) => prev.filter((a) => a.id !== id));
@@ -94,13 +96,13 @@ export default function AdminAnnouncementsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <Megaphone className="w-6 h-6 text-accent-1" />
-                        Pengumuman
+                        {t.adminAnnouncements.title}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">Centralized Broadcast ke semua siswa</p>
+                    <p className="text-foreground/40 text-sm mt-1">{t.adminAnnouncements.subtitle}</p>
                 </div>
                 <Button onClick={() => setShowForm(!showForm)}>
                     <Plus className="w-4 h-4" />
-                    Buat Pengumuman
+                    {t.adminAnnouncements.create}
                 </Button>
             </div>
 
@@ -112,42 +114,42 @@ export default function AdminAnnouncementsPage() {
                     className="mb-6"
                 >
                     <div className="admin-card p-6">
-                        <h2 className="text-lg font-semibold text-foreground mb-4">Pengumuman Baru</h2>
+                        <h2 className="text-lg font-semibold text-foreground mb-4">{t.adminAnnouncements.newAnnouncement}</h2>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs text-foreground/40 mb-1">Judul</label>
+                                    <label className="block text-xs text-foreground/40 mb-1">{t.adminAnnouncements.titleLabel}</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         className="admin-input w-full px-3 py-2 text-sm"
-                                        placeholder="Judul pengumuman"
+                                        placeholder={t.adminAnnouncements.titlePlaceholder}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Tipe</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminAnnouncements.typeLabel}</label>
                                         <select
                                             value={formData.type}
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                                             className="admin-input w-full px-3 py-2 text-sm"
                                         >
-                                            <option value="info">Info</option>
-                                            <option value="warning">Peringatan</option>
-                                            <option value="success">Sukses</option>
-                                            <option value="urgent">Urgent</option>
+                                            <option value="info">{t.adminAnnouncements.typeInfo}</option>
+                                            <option value="warning">{t.adminAnnouncements.typeWarning}</option>
+                                            <option value="success">{t.adminAnnouncements.typeSuccess}</option>
+                                            <option value="urgent">{t.adminAnnouncements.typeUrgent}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Target Kelas</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminAnnouncements.targetClass}</label>
                                         <select
                                             value={formData.target_class_id}
                                             onChange={(e) => setFormData({ ...formData, target_class_id: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm"
                                         >
-                                            <option value="">Semua Kelas</option>
+                                            <option value="">{t.common.allClasses}</option>
                                             {classes.map((c) => (
                                                 <option key={c.id} value={c.id}>{c.name}</option>
                                             ))}
@@ -156,18 +158,18 @@ export default function AdminAnnouncementsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">Isi Pengumuman</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.adminAnnouncements.contentLabel}</label>
                                 <textarea
                                     required
                                     value={formData.content}
                                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                     className="admin-input w-full px-3 py-2 text-sm h-24 resize-none"
-                                    placeholder="Tuliskan isi pengumuman..."
+                                    placeholder={t.adminAnnouncements.contentPlaceholder}
                                 />
                             </div>
                             <div className="flex gap-3 justify-end">
-                                <Button variant="ghost" onClick={() => setShowForm(false)}>Batal</Button>
-                                <Button type="submit">Publikasikan</Button>
+                                <Button variant="ghost" onClick={() => setShowForm(false)}>{t.common.cancel}</Button>
+                                <Button type="submit">{t.adminAnnouncements.publish}</Button>
                             </div>
                         </form>
                     </div>
@@ -190,7 +192,7 @@ export default function AdminAnnouncementsPage() {
                                     <h3 className="text-sm font-semibold text-foreground">{ann.title}</h3>
                                     <Badge variant={typeColors[ann.type]}>{ann.type}</Badge>
                                     <Badge variant={ann.is_active ? 'success' : 'danger'}>
-                                        {ann.is_active ? 'Aktif' : 'Nonaktif'}
+                                        {ann.is_active ? t.common.active : t.common.inactive}
                                     </Badge>
                                 </div>
                                 <p className="text-xs text-foreground/40 line-clamp-2">{ann.content}</p>
@@ -217,7 +219,7 @@ export default function AdminAnnouncementsPage() {
                 ))}
                 {announcements.length === 0 && (
                     <div className="admin-card text-center py-12 text-foreground/30 text-sm">
-                        Belum ada pengumuman
+                        {t.adminAnnouncements.noAnnouncements}
                     </div>
                 )}
             </div>

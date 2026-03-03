@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import { Button, Badge, LoadingSpinner } from '@/components/ui';
 import { BookOpen, Plus, Trash2, ChevronDown, Edit2 } from 'lucide-react';
 import type { TryOut, Question } from '@/types/database';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminQuestionsPage() {
+    const { t } = useTranslation();
     const [tryouts, setTryouts] = useState<TryOut[]>([]);
     const [selectedTryout, setSelectedTryout] = useState<string>('');
     const [questions, setQuestions] = useState<Question[]>([]);
@@ -139,7 +141,7 @@ export default function AdminQuestionsPage() {
     };
 
     const deleteQuestion = async (id: string) => {
-        if (!confirm('Hapus soal ini?')) return;
+        if (!confirm(t.adminQuestions.confirmDelete)) return;
         const supabase = createClient();
         await supabase.from('questions').delete().eq('id', id);
         setQuestions((prev) => prev.filter((q) => q.id !== id));
@@ -153,20 +155,20 @@ export default function AdminQuestionsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <BookOpen className="w-6 h-6 text-accent-1" />
-                        Bank Soal
+                        {t.adminQuestions.title}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">Kelola soal per Try Out</p>
+                    <p className="text-foreground/40 text-sm mt-1">{t.adminQuestions.subtitle}</p>
                 </div>
             </div>
 
             <div className="mb-6">
-                <label className="block text-xs text-foreground/40 mb-2">Pilih Try Out:</label>
+                <label className="block text-xs text-foreground/40 mb-2">{t.adminQuestions.selectTryout}</label>
                 <select
                     value={selectedTryout}
                     onChange={(e) => setSelectedTryout(e.target.value)}
                     className="admin-input px-4 py-2.5 text-sm w-full max-w-md"
                 >
-                    <option value="">-- Pilih Try Out --</option>
+                    <option value="">{t.adminQuestions.selectTryoutDefault}</option>
                     {tryouts.map((t) => (
                         <option key={t.id} value={t.id}>
                             {t.title} ({t.subject?.name})
@@ -178,10 +180,10 @@ export default function AdminQuestionsPage() {
             {selectedTryout && (
                 <>
                     <div className="flex items-center justify-between mb-4">
-                        <p className="text-sm text-foreground/50">{questions.length} soal</p>
+                        <p className="text-sm text-foreground/50">{questions.length} {t.adminQuestions.questionsCount}</p>
                         <Button size="sm" onClick={() => showForm ? resetForm() : setShowForm(true)}>
                             <Plus className="w-4 h-4" />
-                            Tambah Soal
+                            {t.adminQuestions.addQuestion}
                         </Button>
                     </div>
 
@@ -193,24 +195,24 @@ export default function AdminQuestionsPage() {
                         >
                             <div className="admin-card p-6">
                                 <h2 className="text-lg font-semibold text-foreground mb-4">
-                                    {editingId ? 'Edit Soal' : 'Tambah Soal Baru'}
+                                    {editingId ? t.adminQuestions.editQuestion : t.adminQuestions.newQuestion}
                                 </h2>
                                 <form onSubmit={handleCreate} className="space-y-4">
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Soal</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminQuestions.questionLabel}</label>
                                         <textarea
                                             required
                                             value={formData.question_text}
                                             onChange={(e) => setFormData({ ...formData, question_text: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm h-24 resize-none"
-                                            placeholder="Tuliskan pertanyaan..."
+                                            placeholder={t.adminQuestions.questionPlaceholder}
                                         />
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         {(['A', 'B', 'C', 'D', 'E'] as const).map((opt) => (
                                             <div key={opt}>
                                                 <label className="block text-xs text-foreground/40 mb-1">
-                                                    Opsi {opt} {opt === 'E' ? '(opsional)' : ''}
+                                                    {t.adminQuestions.optionLabel} {opt} {opt === 'E' ? t.adminQuestions.optionOptional : ''}
                                                 </label>
                                                 <input
                                                     type="text"
@@ -220,14 +222,14 @@ export default function AdminQuestionsPage() {
                                                         setFormData({ ...formData, [`option_${opt.toLowerCase()}`]: e.target.value })
                                                     }
                                                     className="admin-input w-full px-3 py-2 text-sm"
-                                                    placeholder={`Jawaban ${opt}`}
+                                                    placeholder={`${t.adminQuestions.optionPlaceholder} ${opt}`}
                                                 />
                                             </div>
                                         ))}
                                     </div>
                                     <div className="grid md:grid-cols-3 gap-4">
                                         <div>
-                                            <label className="block text-xs text-foreground/40 mb-1">Jawaban Benar</label>
+                                            <label className="block text-xs text-foreground/40 mb-1">{t.adminQuestions.correctAnswer}</label>
                                             <select
                                                 value={formData.correct_answer}
                                                 onChange={(e) => setFormData({ ...formData, correct_answer: e.target.value as any })}
@@ -239,30 +241,30 @@ export default function AdminQuestionsPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs text-foreground/40 mb-1">Tingkat Kesulitan</label>
+                                            <label className="block text-xs text-foreground/40 mb-1">{t.adminQuestions.difficulty}</label>
                                             <select
                                                 value={formData.difficulty}
                                                 onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
                                                 className="admin-input w-full px-3 py-2 text-sm"
                                             >
-                                                <option value="easy">Mudah</option>
-                                                <option value="medium">Sedang</option>
-                                                <option value="hard">Sulit</option>
+                                                <option value="easy">{t.adminAnalytics.easy}</option>
+                                                <option value="medium">{t.adminAnalytics.medium}</option>
+                                                <option value="hard">{t.adminAnalytics.hard}</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-foreground/40 mb-1">Pembahasan (opsional)</label>
+                                        <label className="block text-xs text-foreground/40 mb-1">{t.adminQuestions.explanation}</label>
                                         <textarea
                                             value={formData.explanation}
                                             onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
                                             className="admin-input w-full px-3 py-2 text-sm h-20 resize-none"
-                                            placeholder="Penjelasan jawaban benar..."
+                                            placeholder={t.adminQuestions.explanationPlaceholder}
                                         />
                                     </div>
                                     <div className="flex gap-3 justify-end">
-                                        <Button variant="ghost" onClick={resetForm}>Batal</Button>
-                                        <Button type="submit">{editingId ? 'Update Soal' : 'Simpan Soal'}</Button>
+                                        <Button variant="ghost" onClick={resetForm}>{t.common.cancel}</Button>
+                                        <Button type="submit">{editingId ? t.adminQuestions.updateQuestion : t.adminQuestions.saveQuestion}</Button>
                                     </div>
                                 </form>
                             </div>
@@ -287,7 +289,7 @@ export default function AdminQuestionsPage() {
                                             >
                                                 {q.difficulty}
                                             </Badge>
-                                            <Badge>Jawaban: {q.correct_answer}</Badge>
+                                            <Badge>{t.adminQuestions.answerLabel} {q.correct_answer}</Badge>
                                         </div>
                                         <p className="text-sm text-foreground whitespace-pre-wrap">{q.question_text}</p>
                                         <div className="mt-2 grid grid-cols-2 gap-1 text-xs text-foreground/40">
@@ -319,7 +321,7 @@ export default function AdminQuestionsPage() {
 
                     {questions.length === 0 && (
                         <div className="admin-card text-center py-12 text-foreground/30 text-sm">
-                            Belum ada soal. Klik &quot;Tambah Soal&quot; untuk menambahkan.
+                            {t.adminQuestions.noQuestions}
                         </div>
                     )}
                 </>

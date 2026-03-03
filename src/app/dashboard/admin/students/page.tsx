@@ -7,8 +7,10 @@ import { Badge, Button, LoadingSpinner } from '@/components/ui';
 import { Users, Search, Download, CheckCircle2, XCircle, Clock, Edit2 } from 'lucide-react';
 import type { Profile, ClassGroup } from '@/types/database';
 import { formatDate, cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminStudentsPage() {
+    const { t } = useTranslation();
     const [students, setStudents] = useState<Profile[]>([]);
     const [classes, setClasses] = useState<ClassGroup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function AdminStudentsPage() {
     };
 
     const exportCSV = () => {
-        const headers = ['Nama', 'Email', 'Kelas', 'Status Pembayaran', 'Tanggal Daftar'];
+        const headers = [t.adminStudents.csvHeaders.name, t.adminStudents.csvHeaders.email, t.adminStudents.csvHeaders.class, t.adminStudents.csvHeaders.paymentStatus, t.adminStudents.csvHeaders.registeredDate];
         const rows = filteredStudents.map((s) => [
             s.full_name,
             s.email,
@@ -95,13 +97,13 @@ export default function AdminStudentsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <Users className="w-6 h-6 text-accent-1" />
-                        Manajemen Siswa
+                        {t.adminStudents.title}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">{students.length} siswa terdaftar</p>
+                    <p className="text-foreground/40 text-sm mt-1">{students.length} {t.adminStudents.subtitle}</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={exportCSV}>
                     <Download className="w-4 h-4" />
-                    Export CSV
+                    {t.common.exportCsv}
                 </Button>
             </div>
 
@@ -111,7 +113,7 @@ export default function AdminStudentsPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                     <input
                         type="text"
-                        placeholder="Cari nama atau email..."
+                        placeholder={t.adminStudents.searchPlaceholder}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="admin-input w-full pl-10 pr-4 py-2 text-sm"
@@ -122,7 +124,7 @@ export default function AdminStudentsPage() {
                     onChange={(e) => setFilterClass(e.target.value)}
                     className="admin-input px-3 py-2 text-sm"
                 >
-                    <option value="all">Semua Kelas</option>
+                    <option value="all">{t.common.allClasses}</option>
                     {classes.map((cls) => (
                         <option key={cls.id} value={cls.id}>{cls.name}</option>
                     ))}
@@ -132,10 +134,10 @@ export default function AdminStudentsPage() {
                     onChange={(e) => setFilterPayment(e.target.value)}
                     className="admin-input px-3 py-2 text-sm"
                 >
-                    <option value="all">Semua Status</option>
-                    <option value="active">Aktif</option>
-                    <option value="expired">Expired</option>
-                    <option value="pending">Pending</option>
+                    <option value="all">{t.adminStudents.allStatus}</option>
+                    <option value="active">{t.common.active}</option>
+                    <option value="expired">{t.common.expired}</option>
+                    <option value="pending">{t.common.pending}</option>
                 </select>
             </div>
 
@@ -145,12 +147,12 @@ export default function AdminStudentsPage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Nama</th>
-                                <th className="px-4 py-3 text-left">Email</th>
-                                <th className="px-4 py-3 text-left">Kelas</th>
-                                <th className="px-4 py-3 text-center">Pembayaran</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center">Aksi</th>
+                                <th className="px-4 py-3 text-left">{t.common.name}</th>
+                                <th className="px-4 py-3 text-left">{t.common.email}</th>
+                                <th className="px-4 py-3 text-left">{t.common.class}</th>
+                                <th className="px-4 py-3 text-center">{t.adminStudents.payment}</th>
+                                <th className="px-4 py-3 text-center">{t.common.status}</th>
+                                <th className="px-4 py-3 text-center">{t.common.actions}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,7 +183,7 @@ export default function AdminStudentsPage() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <Badge variant={student.is_active ? 'success' : 'danger'}>
-                                            {student.is_active ? 'Aktif' : 'Nonaktif'}
+                                            {student.is_active ? t.common.active : t.common.inactive}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -189,7 +191,7 @@ export default function AdminStudentsPage() {
                                             onClick={() => togglePaymentStatus(student.id, student.payment_status)}
                                             className="text-xs text-accent-1 hover:text-accent-2 transition-colors px-2 py-1 rounded hover:bg-accent-1/10"
                                         >
-                                            Toggle Bayar
+                                            {t.adminStudents.togglePayment}
                                         </button>
                                     </td>
                                 </tr>
@@ -199,7 +201,7 @@ export default function AdminStudentsPage() {
                 </div>
                 {filteredStudents.length === 0 && (
                     <div className="text-center py-12 text-foreground/30 text-sm">
-                        Tidak ada siswa ditemukan
+                        {t.adminStudents.noStudents}
                     </div>
                 )}
             </div>

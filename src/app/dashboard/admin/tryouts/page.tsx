@@ -8,8 +8,10 @@ import { useAuthStore } from '@/stores/auth-store';
 import { FileText, Plus, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 import type { TryOut, Subject, ClassGroup } from '@/types/database';
 import { formatDateTime } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminTryoutsPage() {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
     const [tryouts, setTryouts] = useState<TryOut[]>([]);
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -128,7 +130,7 @@ export default function AdminTryoutsPage() {
     };
 
     const deleteTryout = async (id: string) => {
-        if (!confirm('Hapus Try Out ini? Semua soal dan jawaban terkait akan ikut terhapus.')) return;
+        if (!confirm(t.adminTryouts.confirmDelete)) return;
         const supabase = createClient();
         await supabase.from('tryouts').delete().eq('id', id);
         setTryouts((prev) => prev.filter((t) => t.id !== id));
@@ -142,13 +144,13 @@ export default function AdminTryoutsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <FileText className="w-6 h-6 text-accent-1" />
-                        Manajemen Try Out
+                        {t.adminTryouts.title}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">{tryouts.length} Try Out</p>
+                    <p className="text-foreground/40 text-sm mt-1">{tryouts.length} {t.adminTryouts.subtitle}</p>
                 </div>
                 <Button onClick={() => showForm ? resetForm() : setShowForm(true)}>
                     <Plus className="w-4 h-4" />
-                    Buat Try Out
+                    {t.adminTryouts.create}
                 </Button>
             </div>
 
@@ -160,49 +162,49 @@ export default function AdminTryoutsPage() {
                 >
                     <div className="admin-card p-6">
                         <h2 className="text-lg font-semibold text-foreground mb-4">
-                            {editingId ? 'Edit Try Out' : 'Buat Try Out Baru'}
+                            {editingId ? t.adminTryouts.editTryout : t.adminTryouts.newTryout}
                         </h2>
                         <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">Judul</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.common.title}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     className="admin-input w-full px-3 py-2 text-sm"
-                                    placeholder="Try Out Matematika Bab 1"
+                                    placeholder={t.adminTryouts.titlePlaceholder}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">Mata Pelajaran</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.adminTryouts.subjectLabel}</label>
                                 <select
                                     required
                                     value={formData.subject_id}
                                     onChange={(e) => setFormData({ ...formData, subject_id: e.target.value })}
                                     className="admin-input w-full px-3 py-2 text-sm"
                                 >
-                                    <option value="">Pilih Mapel</option>
+                                    <option value="">{t.common.selectSubject}</option>
                                     {subjects.map((s) => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">Kelas (opsional)</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.adminTryouts.classOptional}</label>
                                 <select
                                     value={formData.class_id}
                                     onChange={(e) => setFormData({ ...formData, class_id: e.target.value })}
                                     className="admin-input w-full px-3 py-2 text-sm"
                                 >
-                                    <option value="">Semua Kelas</option>
+                                    <option value="">{t.common.allClasses}</option>
                                     {classes.map((c) => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">Durasi (menit)</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.adminTryouts.durationMinutes}</label>
                                 <input
                                     type="number"
                                     required
@@ -213,7 +215,7 @@ export default function AdminTryoutsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-foreground/40 mb-1">KKM</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.adminTryouts.passingGrade}</label>
                                 <input
                                     type="number"
                                     required
@@ -225,17 +227,17 @@ export default function AdminTryoutsPage() {
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-xs text-foreground/40 mb-1">Deskripsi</label>
+                                <label className="block text-xs text-foreground/40 mb-1">{t.common.description}</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     className="admin-input w-full px-3 py-2 text-sm h-20 resize-none"
-                                    placeholder="Deskripsi singkat..."
+                                    placeholder={t.adminTryouts.descriptionPlaceholder}
                                 />
                             </div>
                             <div className="md:col-span-2 flex gap-3 justify-end">
-                                <Button variant="ghost" onClick={resetForm}>Batal</Button>
-                                <Button type="submit">{editingId ? 'Update' : 'Simpan'}</Button>
+                                <Button variant="ghost" onClick={resetForm}>{t.common.cancel}</Button>
+                                <Button type="submit">{editingId ? t.adminTryouts.update : t.common.save}</Button>
                             </div>
                         </form>
                     </div>
@@ -247,12 +249,12 @@ export default function AdminTryoutsPage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Judul</th>
-                                <th className="px-4 py-3 text-left">Mapel</th>
-                                <th className="px-4 py-3 text-center">Durasi</th>
-                                <th className="px-4 py-3 text-center">KKM</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center">Aksi</th>
+                                <th className="px-4 py-3 text-left">{t.common.title}</th>
+                                <th className="px-4 py-3 text-left">{t.common.subject}</th>
+                                <th className="px-4 py-3 text-center">{t.common.duration}</th>
+                                <th className="px-4 py-3 text-center">{t.adminTryouts.passingGrade}</th>
+                                <th className="px-4 py-3 text-center">{t.common.status}</th>
+                                <th className="px-4 py-3 text-center">{t.common.actions}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -270,7 +272,7 @@ export default function AdminTryoutsPage() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <Badge variant={tryout.is_active ? 'success' : 'danger'}>
-                                            {tryout.is_active ? 'Aktif' : 'Nonaktif'}
+                                            {tryout.is_active ? t.common.active : t.common.inactive}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -285,14 +287,14 @@ export default function AdminTryoutsPage() {
                                             <button
                                                 onClick={() => toggleActive(tryout.id, tryout.is_active)}
                                                 className="p-1.5 rounded hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-colors"
-                                                title={tryout.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                                                title={tryout.is_active ? t.adminTryouts.deactivate : t.adminTryouts.activate}
                                             >
                                                 {tryout.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                             </button>
                                             <button
                                                 onClick={() => deleteTryout(tryout.id)}
                                                 className="p-1.5 rounded hover:bg-red-500/10 text-foreground/40 hover:text-red-400 transition-colors"
-                                                title="Hapus"
+                                                title={t.common.delete}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -305,7 +307,7 @@ export default function AdminTryoutsPage() {
                 </div>
                 {tryouts.length === 0 && (
                     <div className="text-center py-12 text-foreground/30 text-sm">
-                        Belum ada Try Out. Klik &quot;Buat Try Out&quot; untuk memulai.
+                        {t.adminTryouts.noTryouts}
                     </div>
                 )}
             </div>

@@ -14,48 +14,51 @@ import {
   Users,
   Trophy,
 } from 'lucide-react';
-
-const features = [
-  {
-    icon: <FileText className="w-6 h-6" />,
-    title: 'Try Out (CBT)',
-    description: 'Ujian online dengan timer, navigasi soal, dan auto-grading instan.',
-  },
-  {
-    icon: <Video className="w-6 h-6" />,
-    title: 'Video on Demand',
-    description: 'Materi video berkualitas yang bisa ditonton kapan saja.',
-  },
-  {
-    icon: <BookOpen className="w-6 h-6" />,
-    title: 'E-Modul',
-    description: 'Modul digital PDF yang terintegrasi dengan Google Drive.',
-  },
-  {
-    icon: <BarChart3 className="w-6 h-6" />,
-    title: 'Score Tracker',
-    description: 'Pantau perkembangan skor dengan grafik trendline interaktif.',
-  },
-  {
-    icon: <Zap className="w-6 h-6" />,
-    title: 'STRENGTHENS',
-    description: 'Modul adaptif untuk memperkuat materi yang belum dikuasai.',
-  },
-  {
-    icon: <Trophy className="w-6 h-6" />,
-    title: 'Leaderboard',
-    description: 'Kompetisi sehat dengan ranking real-time antar siswa.',
-  },
-];
-
-const stats = [
-  { value: '100+', label: 'Siswa Aktif' },
-  { value: '4', label: 'Kelas' },
-  { value: '500+', label: 'Bank Soal' },
-  { value: '98%', label: 'Kepuasan' },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export default function LandingPage() {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: <FileText className="w-6 h-6" />,
+      title: t.landing.features.tryout.title,
+      description: t.landing.features.tryout.description,
+    },
+    {
+      icon: <Video className="w-6 h-6" />,
+      title: t.landing.features.vod.title,
+      description: t.landing.features.vod.description,
+    },
+    {
+      icon: <BookOpen className="w-6 h-6" />,
+      title: t.landing.features.emod.title,
+      description: t.landing.features.emod.description,
+    },
+    {
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: t.landing.features.scoreTracker.title,
+      description: t.landing.features.scoreTracker.description,
+    },
+    {
+      icon: <Zap className="w-6 h-6" />,
+      title: t.landing.features.strengthens.title,
+      description: t.landing.features.strengthens.description,
+    },
+    {
+      icon: <Trophy className="w-6 h-6" />,
+      title: t.landing.features.leaderboard.title,
+      description: t.landing.features.leaderboard.description,
+    },
+  ];
+
+  const stats = [
+    { value: '100+', label: t.landing.activeStudents },
+    { value: '4', label: t.landing.classes },
+    { value: '500+', label: t.landing.questionBank },
+    { value: '98%', label: t.landing.satisfaction },
+  ];
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Navbar */}
@@ -71,13 +74,13 @@ export default function LandingPage() {
             href="/auth/login"
             className="text-sm text-foreground/60 hover:text-foreground transition-colors px-4 py-2"
           >
-            Masuk
+            {t.landing.login}
           </Link>
           <Link
             href="/auth/register"
             className="text-sm font-medium text-foreground bg-accent-1/10 hover:bg-accent-1/15 border border-accent-1/20 rounded-xl px-5 py-2 transition-colors"
           >
-            Daftar
+            {t.landing.register}
           </Link>
         </div>
       </nav>
@@ -91,30 +94,29 @@ export default function LandingPage() {
         >
           <div className="inline-flex items-center gap-2 bg-accent-1/10 border border-accent-1/20 rounded-full px-4 py-1.5 text-xs text-accent-1 mb-6">
             <Star className="w-3.5 h-3.5" />
-            Platform E-Learning Premium
+            {t.landing.premiumPlatform}
           </div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6">
-            Belajar Lebih Cerdas
+            {t.landing.heroTitle1}
             <br />
-            <span className="text-accent-1">dengan Privcey Edu</span>
+            <span className="text-accent-1">{t.landing.heroTitle2}</span>
           </h1>
           <p className="text-lg md:text-xl text-foreground/40 max-w-2xl mx-auto mb-10">
-            Platform e-learning all-in-one untuk persiapan ujian. Try Out, Video,
-            E-Modul, dan analitik performa — semua dalam satu tempat.
+            {t.landing.heroDescription}
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
               href="/auth/register"
               className="inline-flex items-center gap-2 text-sm font-medium text-white glass-button px-8 py-3.5 rounded-xl hover:scale-105 transition-transform"
             >
-              Mulai Sekarang
+              {t.landing.startNow}
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/auth/login"
               className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-foreground px-6 py-3.5 transition-colors"
             >
-              Sudah punya akun? Masuk
+              {t.landing.haveAccount}
             </Link>
           </div>
         </motion.div>
@@ -142,10 +144,10 @@ export default function LandingPage() {
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-32">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Fitur <span className="text-accent-1">Unggulan</span>
+            {t.landing.featuresTitle} <span className="text-accent-1">{t.landing.featuresHighlight}</span>
           </h2>
           <p className="text-foreground/40 max-w-lg mx-auto">
-            Semua yang kamu butuhkan untuk mempersiapkan ujian dengan lebih efektif.
+            {t.landing.featuresDescription}
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -178,16 +180,16 @@ export default function LandingPage() {
         >
           <Users className="w-10 h-10 text-accent-1 mx-auto mb-4" />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-            Siap Bergabung?
+            {t.landing.readyToJoin}
           </h2>
           <p className="text-foreground/40 mb-8 max-w-md mx-auto">
-            Daftar sekarang dan mulai perjalanan belajarmu bersama Privcey Edu.
+            {t.landing.joinDescription}
           </p>
           <Link
             href="/auth/register"
             className="inline-flex items-center gap-2 text-sm font-medium text-white glass-button px-8 py-3.5 rounded-xl hover:scale-105 transition-transform"
           >
-            Daftar Gratis
+            {t.landing.registerFree}
             <ArrowRight className="w-4 h-4" />
           </Link>
         </motion.div>
@@ -196,7 +198,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-foreground/5 py-8 text-center">
         <p className="text-xs text-foreground/20">
-          © {new Date().getFullYear()} Privcey Edu. All rights reserved.
+          {t.landing.copyright}
         </p>
       </footer>
     </div>

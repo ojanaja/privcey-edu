@@ -7,8 +7,10 @@ import { Button, Badge, LoadingSpinner } from '@/components/ui';
 import { Calendar, Download, Search, Clock, Video, BookOpen, FileText } from 'lucide-react';
 import type { AttendanceLog } from '@/types/database';
 import { formatDateTime, formatDate } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminAttendancePage() {
+    const { t } = useTranslation();
     const [logs, setLogs] = useState<AttendanceLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -32,14 +34,14 @@ export default function AdminAttendancePage() {
     }, []);
 
     const activityLabels: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-        vod_watch: { label: 'Video', icon: <Video className="w-3.5 h-3.5" />, color: 'info' },
-        live_class: { label: 'Live Class', icon: <Clock className="w-3.5 h-3.5" />, color: 'success' },
-        tryout: { label: 'Try Out', icon: <FileText className="w-3.5 h-3.5" />, color: 'warning' },
-        emod_access: { label: 'E-Modul', icon: <BookOpen className="w-3.5 h-3.5" />, color: 'default' },
+        vod_watch: { label: t.adminAttendance.video, icon: <Video className="w-3.5 h-3.5" />, color: 'info' },
+        live_class: { label: t.adminAttendance.liveClass, icon: <Clock className="w-3.5 h-3.5" />, color: 'success' },
+        tryout: { label: t.adminAttendance.tryout, icon: <FileText className="w-3.5 h-3.5" />, color: 'warning' },
+        emod_access: { label: t.adminAttendance.emod, icon: <BookOpen className="w-3.5 h-3.5" />, color: 'default' },
     };
 
     const exportCSV = () => {
-        const headers = ['Nama Siswa', 'Email', 'Aktivitas', 'Judul', 'Waktu'];
+        const headers = [t.adminAttendance.csvHeaders.studentName, t.adminAttendance.csvHeaders.email, t.adminAttendance.csvHeaders.activity, t.adminAttendance.csvHeaders.title, t.adminAttendance.csvHeaders.time];
         const rows = filteredLogs.map((log) => [
             log.student?.full_name || '-',
             log.student?.email || '-',
@@ -73,15 +75,15 @@ export default function AdminAttendancePage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <Calendar className="w-6 h-6 text-accent-1" />
-                        Kehadiran (Silent Attendance)
+                        {t.adminAttendance.title}
                     </h1>
                     <p className="text-foreground/40 text-sm mt-1">
-                        {logs.length} catatan aktivitas — direkam otomatis
+                        {logs.length} {t.adminAttendance.subtitle}
                     </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={exportCSV}>
                     <Download className="w-4 h-4" />
-                    Export CSV
+                    {t.common.exportCsv}
                 </Button>
             </div>
 
@@ -91,7 +93,7 @@ export default function AdminAttendancePage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                     <input
                         type="text"
-                        placeholder="Cari nama siswa atau aktivitas..."
+                        placeholder={t.adminAttendance.searchPlaceholder}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="admin-input w-full pl-10 pr-4 py-2 text-sm"
@@ -102,11 +104,11 @@ export default function AdminAttendancePage() {
                     onChange={(e) => setFilterType(e.target.value)}
                     className="admin-input px-3 py-2 text-sm"
                 >
-                    <option value="all">Semua Aktivitas</option>
-                    <option value="vod_watch">Video</option>
-                    <option value="live_class">Live Class</option>
-                    <option value="tryout">Try Out</option>
-                    <option value="emod_access">E-Modul</option>
+                    <option value="all">{t.adminAttendance.allActivities}</option>
+                    <option value="vod_watch">{t.adminAttendance.video}</option>
+                    <option value="live_class">{t.adminAttendance.liveClass}</option>
+                    <option value="tryout">{t.adminAttendance.tryout}</option>
+                    <option value="emod_access">{t.adminAttendance.emod}</option>
                 </select>
             </div>
 
@@ -116,10 +118,10 @@ export default function AdminAttendancePage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Siswa</th>
-                                <th className="px-4 py-3 text-left">Aktivitas</th>
-                                <th className="px-4 py-3 text-left">Judul</th>
-                                <th className="px-4 py-3 text-left">Waktu</th>
+                                <th className="px-4 py-3 text-left">{t.common.student}</th>
+                                <th className="px-4 py-3 text-left">{t.adminAttendance.csvHeaders.activity}</th>
+                                <th className="px-4 py-3 text-left">{t.common.title}</th>
+                                <th className="px-4 py-3 text-left">{t.common.time}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -150,7 +152,7 @@ export default function AdminAttendancePage() {
                 </div>
                 {filteredLogs.length === 0 && (
                     <div className="text-center py-12 text-foreground/30 text-sm">
-                        Tidak ada data kehadiran
+                        {t.adminAttendance.noData}
                     </div>
                 )}
             </div>

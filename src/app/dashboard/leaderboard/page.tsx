@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { GlassCard, Badge, LoadingSpinner } from '@/components/ui';
 import { Trophy, Medal, Star, Crown } from 'lucide-react';
 import { getInitials, cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface LeaderboardEntry {
     student_id: string;
@@ -18,6 +19,7 @@ interface LeaderboardEntry {
 
 export default function LeaderboardPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -86,7 +88,7 @@ export default function LeaderboardPage() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-8">
                 <Trophy className="w-6 h-6 text-yellow-400" />
-                Leaderboard
+                {t.leaderboardPage.title}
             </h1>
 
             {entries.length >= 3 && (
@@ -131,8 +133,8 @@ export default function LeaderboardPage() {
                                     )}>
                                         {entry.avg_score}
                                     </p>
-                                    <p className="text-[10px] text-foreground/30">{entry.total_attempts} try out</p>
-                                    {isMe && <Badge variant="info" className="mt-2">Kamu</Badge>}
+                                    <p className="text-[10px] text-foreground/30">{entry.total_attempts} {t.leaderboardPage.tryoutCount}</p>
+                                    {isMe && <Badge variant="info" className="mt-2">{t.leaderboardPage.you}</Badge>}
                                 </GlassCard>
                             </motion.div>
                         );
@@ -141,7 +143,7 @@ export default function LeaderboardPage() {
             )}
 
             <GlassCard hoverable={false} padding="md">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Peringkat Lengkap</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t.leaderboardPage.fullRanking}</h2>
                 {entries.length > 0 ? (
                     <div className="space-y-2">
                         {entries.map((entry, idx) => {
@@ -169,9 +171,9 @@ export default function LeaderboardPage() {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-foreground truncate">
                                             {entry.full_name}
-                                            {isMe && <span className="text-accent-1 ml-2">(Kamu)</span>}
+                                            {isMe && <span className="text-accent-1 ml-2">({t.leaderboardPage.you})</span>}
                                         </p>
-                                        <p className="text-[11px] text-foreground/30">{entry.class_name || '-'} · {entry.total_attempts} try out</p>
+                                        <p className="text-[11px] text-foreground/30">{entry.class_name || '-'} · {entry.total_attempts} {t.leaderboardPage.tryoutCount}</p>
                                     </div>
                                     <span className={cn(
                                         'text-lg font-bold',
@@ -186,7 +188,7 @@ export default function LeaderboardPage() {
                 ) : (
                     <div className="text-center py-12 text-foreground/30">
                         <Star className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Belum ada data leaderboard</p>
+                        <p className="text-sm">{t.leaderboardPage.noData}</p>
                     </div>
                 )}
             </GlassCard>

@@ -23,18 +23,25 @@ import {
 import Image from 'next/image';
 import type { Profile, ClassGroup } from '@/types/database';
 import { formatDate, cn, getInitials } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface ProfileWithClass extends Profile {
     class_groups: { name: string } | null;
 }
 
-const ROLE_CONFIG = {
-    admin: { label: 'Admin', icon: Shield, color: 'danger' as const },
-    tutor: { label: 'Tutor', icon: BookOpen, color: 'warning' as const },
-    student: { label: 'Siswa', icon: GraduationCap, color: 'info' as const },
+const ROLE_ICONS = {
+    admin: { icon: Shield, color: 'danger' as const },
+    tutor: { icon: BookOpen, color: 'warning' as const },
+    student: { icon: GraduationCap, color: 'info' as const },
 };
 
 export default function AdminUsersPage() {
+    const { t } = useTranslation();
+    const ROLE_CONFIG = {
+        admin: { label: t.common.admin, icon: Shield, color: 'danger' as const },
+        tutor: { label: t.common.tutor, icon: BookOpen, color: 'warning' as const },
+        student: { label: t.common.student, icon: GraduationCap, color: 'info' as const },
+    };
     const [users, setUsers] = useState<ProfileWithClass[]>([]);
     const [classes, setClasses] = useState<ClassGroup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -160,24 +167,24 @@ export default function AdminUsersPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <UserCog className="w-6 h-6 text-accent-1" />
-                        Manajemen Pengguna
+                        {t.adminUsers.title}
                     </h1>
                     <p className="text-foreground/40 text-sm mt-1">
-                        Kelola role dan akses semua pengguna platform
+                        {t.adminUsers.subtitle}
                     </p>
                 </div>
                 <Button size="sm" onClick={() => setShowAddForm(true)}>
                     <Plus className="w-4 h-4" />
-                    Tambah Staff
+                    {t.adminUsers.addStaff}
                 </Button>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 {[
-                    { label: 'Total', value: roleStats.total, color: 'bg-foreground/10' },
-                    { label: 'Admin', value: roleStats.admin, color: 'bg-red-500/15' },
-                    { label: 'Tutor', value: roleStats.tutor, color: 'bg-yellow-500/15' },
-                    { label: 'Siswa', value: roleStats.student, color: 'bg-blue-500/15' },
+                    { label: t.common.total, value: roleStats.total, color: 'bg-foreground/10' },
+                    { label: t.common.admin, value: roleStats.admin, color: 'bg-red-500/15' },
+                    { label: t.common.tutor, value: roleStats.tutor, color: 'bg-yellow-500/15' },
+                    { label: t.common.student, value: roleStats.student, color: 'bg-blue-500/15' },
                 ].map((stat) => (
                     <div
                         key={stat.label}
@@ -194,7 +201,7 @@ export default function AdminUsersPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                     <input
                         type="text"
-                        placeholder="Cari nama atau email..."
+                        placeholder={t.adminStudents.searchPlaceholder}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="admin-input w-full pl-10 pr-4 py-2 text-sm"
@@ -205,17 +212,17 @@ export default function AdminUsersPage() {
                     onChange={(e) => setFilterRole(e.target.value)}
                     className="admin-input px-3 py-2 text-sm"
                 >
-                    <option value="all">Semua Role</option>
-                    <option value="admin">Admin</option>
-                    <option value="tutor">Tutor</option>
-                    <option value="student">Siswa</option>
+                    <option value="all">{t.adminUsers.allRoles}</option>
+                    <option value="admin">{t.common.admin}</option>
+                    <option value="tutor">{t.common.tutor}</option>
+                    <option value="student">{t.common.student}</option>
                 </select>
             </div>
 
             <div className="admin-card px-4 py-3 mb-6 border border-accent-1/20 bg-accent-1/5">
                 <p className="text-sm text-foreground/60">
-                    <span className="text-accent-1 font-medium">Info:</span> Siswa otomatis terdaftar saat login dengan Google.
-                    Untuk menambah <strong className="text-yellow-400">Tutor</strong> atau <strong className="text-red-400">Admin</strong> baru, klik tombol <strong className="text-foreground/80">&quot;Tambah Staff&quot;</strong> — mereka login via <code className="text-xs bg-foreground/10 px-1.5 py-0.5 rounded">/auth/staff-login</code>.
+                    <span className="text-accent-1 font-medium">{t.adminUsers.infoTitle}</span> {t.adminUsers.infoText1}
+                    {' '}{t.adminUsers.infoText2}
                 </p>
             </div>
 
@@ -224,12 +231,12 @@ export default function AdminUsersPage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Pengguna</th>
-                                <th className="px-4 py-3 text-left">Role</th>
-                                <th className="px-4 py-3 text-left">Kelas</th>
-                                <th className="px-4 py-3 text-left">Status</th>
-                                <th className="px-4 py-3 text-left">Terdaftar</th>
-                                <th className="px-4 py-3 text-center">Aksi</th>
+                                <th className="px-4 py-3 text-left">{t.adminUsers.userColumn}</th>
+                                <th className="px-4 py-3 text-left">{t.common.role}</th>
+                                <th className="px-4 py-3 text-left">{t.common.class}</th>
+                                <th className="px-4 py-3 text-left">{t.common.status}</th>
+                                <th className="px-4 py-3 text-left">{t.adminUsers.registered}</th>
+                                <th className="px-4 py-3 text-center">{t.common.actions}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -312,12 +319,12 @@ export default function AdminUsersPage() {
                                                 {u.is_active ? (
                                                     <Badge variant="success">
                                                         <CheckCircle2 className="w-3 h-3 mr-1" />
-                                                        Aktif
+                                                        {t.common.active}
                                                     </Badge>
                                                 ) : (
                                                     <Badge variant="danger">
                                                         <XCircle className="w-3 h-3 mr-1" />
-                                                        Nonaktif
+                                                        {t.common.inactive}
                                                     </Badge>
                                                 )}
                                             </button>
@@ -331,7 +338,7 @@ export default function AdminUsersPage() {
                                                 size="sm"
                                                 onClick={() => setEditingUser(u)}
                                             >
-                                                Detail
+                                                {t.common.detail}
                                             </Button>
                                         </td>
                                     </tr>
@@ -344,7 +351,7 @@ export default function AdminUsersPage() {
                 {users.length === 0 && !isLoading && (
                     <div className="py-12 text-center text-foreground/40">
                         <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                        <p>Tidak ada pengguna ditemukan</p>
+                        <p>{t.adminUsers.noUsers}</p>
                     </div>
                 )}
             </div>
@@ -392,6 +399,7 @@ function EditUserModal({
     }) => void;
     isSaving: boolean;
 }) {
+    const { t } = useTranslation();
     const [role, setRole] = useState(user.role);
     const [classId, setClassId] = useState(user.class_id || '');
     const [isActive, setIsActive] = useState(user.is_active);
@@ -426,7 +434,7 @@ function EditUserModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-foreground">Edit Pengguna</h2>
+                    <h2 className="text-lg font-bold text-foreground">{t.adminUsers.editUser}</h2>
                     <button
                         onClick={onClose}
                         className="text-foreground/40 hover:text-foreground/70 transition-colors"
@@ -466,22 +474,22 @@ function EditUserModal({
                             onChange={(e) => setRole(e.target.value as 'student' | 'tutor' | 'admin')}
                             className="admin-input w-full px-3 py-2 text-sm"
                         >
-                            <option value="student">Siswa</option>
-                            <option value="tutor">Tutor</option>
-                            <option value="admin">Admin</option>
+                            <option value="student">{t.common.student}</option>
+                            <option value="tutor">{t.common.tutor}</option>
+                            <option value="admin">{t.common.admin}</option>
                         </select>
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-foreground/60 mb-1.5">
-                            Kelas
+                            {t.common.class}
                         </label>
                         <select
                             value={classId}
                             onChange={(e) => setClassId(e.target.value)}
                             className="admin-input w-full px-3 py-2 text-sm"
                         >
-                            <option value="">Tidak ada kelas</option>
+                            <option value="">{t.adminUsers.noClass}</option>
                             {classes.map((cls) => (
                                 <option key={cls.id} value={cls.id}>
                                     {cls.name}
@@ -491,7 +499,7 @@ function EditUserModal({
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground/60">Akun Aktif</label>
+                        <label className="text-sm font-medium text-foreground/60">{t.adminUsers.accountActive}</label>
                         <button
                             onClick={() => setIsActive(!isActive)}
                             className={cn(
@@ -513,7 +521,7 @@ function EditUserModal({
                     {role === 'student' && (
                         <div>
                             <label className="block text-sm font-medium text-foreground/60 mb-1.5">
-                                Status Pembayaran
+                                {t.adminUsers.paymentStatus}
                             </label>
                             <select
                                 value={paymentStatus}
@@ -524,9 +532,9 @@ function EditUserModal({
                                 }
                                 className="admin-input w-full px-3 py-2 text-sm"
                             >
-                                <option value="active">Aktif</option>
-                                <option value="expired">Expired</option>
-                                <option value="pending">Pending</option>
+                                <option value="active">{t.common.active}</option>
+                                <option value="expired">{t.common.expired}</option>
+                                <option value="pending">{t.common.pending}</option>
                             </select>
                         </div>
                     )}
@@ -538,14 +546,14 @@ function EditUserModal({
                         className="flex-1"
                         onClick={onClose}
                     >
-                        Batal
+                        {t.common.cancel}
                     </Button>
                     <Button
                         className="flex-1"
                         onClick={handleSave}
                         isLoading={isSaving}
                     >
-                        Simpan Perubahan
+                        {t.adminUsers.saveChanges}
                     </Button>
                 </div>
             </motion.div>
@@ -567,6 +575,7 @@ function AddStaffModal({
     }) => Promise<{ error?: string }>;
     isSaving: boolean;
 }) {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
@@ -578,7 +587,7 @@ function AddStaffModal({
         setError('');
 
         if (password.length < 6) {
-            setError('Password minimal 6 karakter');
+            setError(t.adminUsers.passwordMinLength);
             return;
         }
 
@@ -606,7 +615,7 @@ function AddStaffModal({
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                         <Plus className="w-5 h-5 text-accent-1" />
-                        Tambah Staff Baru
+                        {t.adminUsers.newStaff}
                     </h2>
                     <button
                         onClick={onClose}
@@ -625,7 +634,7 @@ function AddStaffModal({
 
                     <div>
                         <label className="block text-sm font-medium text-foreground/60 mb-1.5">
-                            Nama Lengkap
+                            {t.adminUsers.fullName}
                         </label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/25" />
@@ -633,7 +642,7 @@ function AddStaffModal({
                                 type="text"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                placeholder="Nama lengkap"
+                                placeholder={t.adminUsers.fullNamePlaceholder}
                                 required
                                 className="admin-input w-full pl-10 pr-4 py-2 text-sm"
                             />
@@ -659,7 +668,7 @@ function AddStaffModal({
 
                     <div>
                         <label className="block text-sm font-medium text-foreground/60 mb-1.5">
-                            Password
+                            {t.adminUsers.passwordLabel}
                         </label>
                         <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/25" />
@@ -667,7 +676,7 @@ function AddStaffModal({
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Minimal 6 karakter"
+                                placeholder={t.adminUsers.passwordPlaceholder}
                                 required
                                 className="admin-input w-full pl-10 pr-4 py-2 text-sm"
                             />
@@ -690,16 +699,16 @@ function AddStaffModal({
 
                     <div className="flex gap-3 mt-6">
                         <Button variant="ghost" className="flex-1" onClick={onClose} type="button">
-                            Batal
+                            {t.common.cancel}
                         </Button>
                         <Button className="flex-1" type="submit" isLoading={isSaving}>
-                            Buat Akun Staff
+                            {t.adminUsers.createStaffAccount}
                         </Button>
                     </div>
                 </form>
 
                 <p className="text-xs text-foreground/30 mt-4 text-center">
-                    Staff login di <code className="bg-foreground/10 px-1 py-0.5 rounded">/auth/staff-login</code> menggunakan email &amp; password ini.
+                    {t.adminUsers.staffLoginInfo}
                 </p>
             </motion.div>
         </motion.div>

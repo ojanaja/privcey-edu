@@ -7,9 +7,11 @@ import { createClient } from '@/lib/supabase/client';
 import { GlassCard, Badge, Button } from '@/components/ui';
 import { BookOpen, ExternalLink, FileText, Search } from 'lucide-react';
 import type { EmodContent } from '@/types/database';
+import { useTranslation } from '@/lib/i18n';
 
 export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }) {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [emods] = useState<EmodContent[]>(initialEmods);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -39,9 +41,9 @@ export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <BookOpen className="w-6 h-6 text-accent-1" />
-                        E-Modul
+                        {t.emod.title}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">Akses modul belajar digital (PDF via Google Drive)</p>
+                    <p className="text-foreground/40 text-sm mt-1">{t.emod.subtitle}</p>
                 </div>
             </div>
 
@@ -49,7 +51,7 @@ export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                 <input
                     type="text"
-                    placeholder="Cari modul..."
+                    placeholder={t.emod.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="glass-input w-full pl-10 pr-4 py-2.5 text-sm"
@@ -83,7 +85,7 @@ export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }
                                 className="w-full"
                             >
                                 <FileText className="w-4 h-4" />
-                                Buka Modul
+                                {t.emod.openModule}
                                 <ExternalLink className="w-3.5 h-3.5" />
                             </Button>
                         </GlassCard>
@@ -93,7 +95,7 @@ export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }
 
             {filtered.length === 0 && (
                 <div className="text-center py-16 text-foreground/30 text-sm">
-                    Belum ada modul tersedia
+                    {t.emod.noModules}
                 </div>
             )}
         </motion.div>

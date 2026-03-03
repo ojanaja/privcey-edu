@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import { Badge, LoadingSpinner } from '@/components/ui';
 import { Calendar, Search, Video, BookOpen, FileText, Clock } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function TutorAttendancePage() {
+    const { t } = useTranslation();
     const [logs, setLogs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -49,16 +51,16 @@ export default function TutorAttendancePage() {
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                     <Calendar className="w-6 h-6 text-accent-1" />
-                    Kehadiran Siswa
+                    {t.tutorAttendance.title}
                 </h1>
-                <p className="text-foreground/40 text-sm mt-1">Aktivitas siswa (read-only)</p>
+                <p className="text-foreground/40 text-sm mt-1">{t.tutorAttendance.subtitle}</p>
             </div>
 
             <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                 <input
                     type="text"
-                    placeholder="Cari nama siswa..."
+                    placeholder={t.tutorAttendance.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="admin-input w-full pl-10 pr-4 py-2 text-sm max-w-md"
@@ -70,10 +72,10 @@ export default function TutorAttendancePage() {
                     <table className="w-full admin-table">
                         <thead>
                             <tr>
-                                <th className="px-4 py-3 text-left">Siswa</th>
-                                <th className="px-4 py-3 text-left">Aktivitas</th>
-                                <th className="px-4 py-3 text-left">Judul</th>
-                                <th className="px-4 py-3 text-left">Waktu</th>
+                                <th className="px-4 py-3 text-left">{t.common.student}</th>
+                                <th className="px-4 py-3 text-left">{t.common.status}</th>
+                                <th className="px-4 py-3 text-left">{t.common.title}</th>
+                                <th className="px-4 py-3 text-left">{t.common.duration}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,7 +93,7 @@ export default function TutorAttendancePage() {
                     </table>
                 </div>
                 {filtered.length === 0 && (
-                    <div className="text-center py-12 text-foreground/30 text-sm">Tidak ada data</div>
+                    <div className="text-center py-12 text-foreground/30 text-sm">{t.tutorAttendance.noData}</div>
                 )}
             </div>
         </motion.div>

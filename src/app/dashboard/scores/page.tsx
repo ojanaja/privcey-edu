@@ -8,6 +8,7 @@ import { GlassCard, Badge, LoadingSpinner, ScoreRing } from '@/components/ui';
 import { BarChart3, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import type { TryOutAttempt } from '@/types/database';
 import { formatDate, getScoreColor } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import {
     LineChart,
     Line,
@@ -22,6 +23,7 @@ import {
 
 export default function ScoresPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [attempts, setAttempts] = useState<TryOutAttempt[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -66,22 +68,22 @@ export default function ScoresPage() {
         >
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3 mb-8">
                 <BarChart3 className="w-6 h-6 text-accent-1" />
-                LBE Score Tracker
+                {t.scoresPage.title}
             </h1>
 
             {/* Score Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <GlassCard hoverable={false} padding="md" className="text-center">
                     <ScoreRing score={avgScore} size={100} strokeWidth={6} />
-                    <p className="text-xs text-foreground/40 mt-2">Rata-rata</p>
+                    <p className="text-xs text-foreground/40 mt-2">{t.scoresPage.avgLabel}</p>
                 </GlassCard>
                 <GlassCard hoverable={false} padding="md" className="text-center flex flex-col items-center justify-center">
                     <p className={`text-3xl font-bold ${getScoreColor(bestScore)}`}>{bestScore}</p>
-                    <p className="text-xs text-foreground/40 mt-1">Nilai Tertinggi</p>
+                    <p className="text-xs text-foreground/40 mt-1">{t.scoresPage.bestLabel}</p>
                 </GlassCard>
                 <GlassCard hoverable={false} padding="md" className="text-center flex flex-col items-center justify-center">
                     <p className="text-3xl font-bold text-foreground">{attempts.length}</p>
-                    <p className="text-xs text-foreground/40 mt-1">Total Try Out</p>
+                    <p className="text-xs text-foreground/40 mt-1">{t.scoresPage.totalLabel}</p>
                 </GlassCard>
                 <GlassCard hoverable={false} padding="md" className="text-center flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
@@ -94,14 +96,14 @@ export default function ScoresPage() {
                             {latestTrend >= 0 ? '+' : ''}{Math.round(latestTrend)}
                         </p>
                     </div>
-                    <p className="text-xs text-foreground/40 mt-1">Tren Terakhir</p>
+                    <p className="text-xs text-foreground/40 mt-1">{t.scoresPage.trendLabel}</p>
                 </GlassCard>
             </div>
 
             {/* Score Chart */}
             {chartData.length > 1 && (
                 <GlassCard hoverable={false} padding="md" className="mb-8">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Trendline Performa</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-4">{t.scoresPage.trendline}</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={chartData}>
                             <defs>
@@ -144,19 +146,19 @@ export default function ScoresPage() {
 
             {/* Score History Table */}
             <GlassCard hoverable={false} padding="md">
-                <h2 className="text-lg font-semibold text-foreground mb-4">Riwayat Nilai</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">{t.scoresPage.scoreHistory}</h2>
                 {attempts.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="text-left text-xs text-foreground/40 border-b border-foreground/5">
-                                    <th className="pb-3 font-medium">Try Out</th>
-                                    <th className="pb-3 font-medium">Mapel</th>
-                                    <th className="pb-3 font-medium text-center">Benar</th>
-                                    <th className="pb-3 font-medium text-center">Salah</th>
-                                    <th className="pb-3 font-medium text-center">Kosong</th>
-                                    <th className="pb-3 font-medium text-center">Nilai</th>
-                                    <th className="pb-3 font-medium">Tanggal</th>
+                                    <th className="pb-3 font-medium">{t.scoresPage.tryoutColumn}</th>
+                                    <th className="pb-3 font-medium">{t.scoresPage.subjectColumn}</th>
+                                    <th className="pb-3 font-medium text-center">{t.scoresPage.correctColumn}</th>
+                                    <th className="pb-3 font-medium text-center">{t.scoresPage.wrongColumn}</th>
+                                    <th className="pb-3 font-medium text-center">{t.scoresPage.emptyColumn}</th>
+                                    <th className="pb-3 font-medium text-center">{t.scoresPage.scoreColumn}</th>
+                                    <th className="pb-3 font-medium">{t.scoresPage.dateColumn}</th>
                                 </tr>
                             </thead>
                             <tbody className="text-sm">
@@ -193,7 +195,7 @@ export default function ScoresPage() {
                 ) : (
                     <div className="text-center py-12 text-foreground/30">
                         <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Belum ada riwayat nilai</p>
+                        <p className="text-sm">{t.scoresPage.noHistory}</p>
                     </div>
                 )}
             </GlassCard>

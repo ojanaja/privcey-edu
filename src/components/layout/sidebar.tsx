@@ -26,44 +26,48 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { useTranslation } from '@/lib/i18n';
 
-const studentNavItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/tryout', label: 'Try Out', icon: FileText },
-    { href: '/dashboard/latsol', label: 'Latihan Soal', icon: BookOpen },
-    { href: '/dashboard/emod', label: 'E-Modul', icon: BookOpen },
-    { href: '/dashboard/vod', label: 'Video Belajar', icon: Video },
-    { href: '/dashboard/live', label: 'Live Class', icon: Radio },
-    { href: '/dashboard/scores', label: 'Nilai Saya', icon: BarChart3 },
-    { href: '/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { href: '/dashboard/strengthens', label: 'STRENGTHENS', icon: Zap },
-];
-
-const adminNavItems = [
-    { href: '/dashboard/admin', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/admin/users', label: 'Pengguna', icon: UserCog },
-    { href: '/dashboard/admin/students', label: 'Siswa', icon: GraduationCap },
-    { href: '/dashboard/admin/tryouts', label: 'Try Out', icon: FileText },
-    { href: '/dashboard/admin/questions', label: 'Bank Soal', icon: BookOpen },
-    { href: '/dashboard/admin/content', label: 'Konten', icon: Video },
-    { href: '/dashboard/admin/attendance', label: 'Kehadiran', icon: Calendar },
-    { href: '/dashboard/admin/announcements', label: 'Pengumuman', icon: Menu },
-    { href: '/dashboard/admin/analytics', label: 'Analitik', icon: BarChart3 },
-];
-
-const tutorNavItems = [
-    { href: '/dashboard/tutor', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/tutor/tryouts', label: 'Try Out', icon: FileText },
-    { href: '/dashboard/tutor/questions', label: 'Bank Soal', icon: BookOpen },
-    { href: '/dashboard/tutor/scores', label: 'Nilai Siswa', icon: BarChart3 },
-    { href: '/dashboard/tutor/attendance', label: 'Kehadiran', icon: Calendar },
-];
+function useNavItems() {
+    const { t } = useTranslation();
+    const studentNavItems = [
+        { href: '/dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
+        { href: '/dashboard/tryout', label: t.nav.tryout, icon: FileText },
+        { href: '/dashboard/latsol', label: t.nav.dailyExercise, icon: BookOpen },
+        { href: '/dashboard/emod', label: t.nav.emod, icon: BookOpen },
+        { href: '/dashboard/vod', label: t.nav.videoLearning, icon: Video },
+        { href: '/dashboard/live', label: t.nav.liveClass, icon: Radio },
+        { href: '/dashboard/scores', label: t.nav.myScores, icon: BarChart3 },
+        { href: '/dashboard/leaderboard', label: t.nav.leaderboard, icon: Trophy },
+        { href: '/dashboard/strengthens', label: t.nav.strengthens, icon: Zap },
+    ];
+    const adminNavItems = [
+        { href: '/dashboard/admin', label: t.nav.overview, icon: LayoutDashboard },
+        { href: '/dashboard/admin/users', label: t.nav.users, icon: UserCog },
+        { href: '/dashboard/admin/students', label: t.nav.students, icon: GraduationCap },
+        { href: '/dashboard/admin/tryouts', label: t.nav.tryout, icon: FileText },
+        { href: '/dashboard/admin/questions', label: t.nav.questionBank, icon: BookOpen },
+        { href: '/dashboard/admin/content', label: t.nav.content, icon: Video },
+        { href: '/dashboard/admin/attendance', label: t.nav.attendance, icon: Calendar },
+        { href: '/dashboard/admin/announcements', label: t.nav.announcements, icon: Menu },
+        { href: '/dashboard/admin/analytics', label: t.nav.analytics, icon: BarChart3 },
+    ];
+    const tutorNavItems = [
+        { href: '/dashboard/tutor', label: t.nav.overview, icon: LayoutDashboard },
+        { href: '/dashboard/tutor/tryouts', label: t.nav.tryout, icon: FileText },
+        { href: '/dashboard/tutor/scores', label: t.nav.studentScores, icon: BarChart3 },
+        { href: '/dashboard/tutor/attendance', label: t.nav.attendance, icon: Calendar },
+    ];
+    return { studentNavItems, adminNavItems, tutorNavItems, t };
+}
 
 export function Sidebar() {
     const pathname = usePathname();
     const { user } = useAuthStore();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const router = useRouter();
+    const { studentNavItems, adminNavItems, tutorNavItems, t } = useNavItems();
 
     const navItems =
         user?.role === 'admin'
@@ -90,7 +94,7 @@ export function Sidebar() {
                     <div>
                         <h1 className="text-lg font-bold text-accent-1">Privcey Edu</h1>
                         <p className="text-[10px] text-foreground/30 uppercase tracking-widest">
-                            {user?.role === 'admin' ? 'Admin Panel' : user?.role === 'tutor' ? 'Tutor Panel' : 'Student Portal'}
+                            {user?.role === 'admin' ? t.nav.adminPanel : user?.role === 'tutor' ? t.nav.tutorPanel : t.nav.studentPortal}
                         </p>
                     </div>
                 </Link>
@@ -142,13 +146,14 @@ export function Sidebar() {
                         <p className="text-[11px] text-foreground/30 truncate">{user?.email}</p>
                     </div>
                     <ThemeToggle />
+                    <LanguageSwitcher />
                 </div>
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-foreground/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                 >
                     <LogOut className="w-4 h-4" />
-                    Keluar
+                    {t.nav.logout}
                 </button>
             </div>
         </div>

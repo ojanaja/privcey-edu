@@ -8,9 +8,11 @@ import { GlassCard, Badge } from '@/components/ui';
 import { Video, Play, Clock, Search } from 'lucide-react';
 import Image from 'next/image';
 import type { VodContent } from '@/types/database';
+import { useTranslation } from '@/lib/i18n';
 
 export function VodClientPage({ initialVods }: { initialVods: VodContent[] }) {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [vods] = useState<VodContent[]>(initialVods);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedVod, setSelectedVod] = useState<VodContent | null>(null);
@@ -41,9 +43,9 @@ export function VodClientPage({ initialVods }: { initialVods: VodContent[] }) {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <Video className="w-6 h-6 text-accent-1" />
-                        Video Belajar
+                        {t.nav.videoLearning}
                     </h1>
-                    <p className="text-foreground/40 text-sm mt-1">Tonton video pembelajaran kapan saja</p>
+                    <p className="text-foreground/40 text-sm mt-1">{t.vod.subtitle}</p>
                 </div>
             </div>
 
@@ -51,7 +53,7 @@ export function VodClientPage({ initialVods }: { initialVods: VodContent[] }) {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
                 <input
                     type="text"
-                    placeholder="Cari video..."
+                    placeholder={t.vod.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="glass-input w-full pl-10 pr-4 py-2.5 text-sm"
@@ -136,7 +138,7 @@ export function VodClientPage({ initialVods }: { initialVods: VodContent[] }) {
 
             {filtered.length === 0 && (
                 <div className="text-center py-16 text-foreground/30 text-sm">
-                    Belum ada video tersedia
+                    {t.vod.noVideos}
                 </div>
             )}
         </motion.div>

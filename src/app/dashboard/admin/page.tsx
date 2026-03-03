@@ -26,8 +26,10 @@ import {
     Pie,
     Cell,
 } from 'recharts';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AdminDashboard() {
+    const { t } = useTranslation();
     const [stats, setStats] = useState({
         totalStudents: 0,
         activeStudents: 0,
@@ -90,9 +92,9 @@ export default function AdminDashboard() {
             }
 
             setPaymentStatus([
-                { name: 'Aktif', value: activeStudents || 0, color: '#22c55e' },
-                { name: 'Expired', value: expiredPayments || 0, color: '#ef4444' },
-                { name: 'Pending', value: (totalStudents || 0) - (activeStudents || 0) - (expiredPayments || 0), color: '#eab308' },
+                { name: 'active', value: activeStudents || 0, color: '#22c55e' },
+                { name: 'expired', value: expiredPayments || 0, color: '#ef4444' },
+                { name: 'pending', value: (totalStudents || 0) - (activeStudents || 0) - (expiredPayments || 0), color: '#eab308' },
             ]);
         };
 
@@ -106,29 +108,29 @@ export default function AdminDashboard() {
             transition={{ duration: 0.3 }}
         >
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-                <p className="text-foreground/40 text-sm mt-1">Overview operasional Privcey Edu</p>
+                <h1 className="text-2xl font-bold text-foreground">{t.adminDashboard.title}</h1>
+                <p className="text-foreground/40 text-sm mt-1">{t.adminDashboard.subtitle}</p>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
-                    label="Total Siswa"
+                    label={t.adminDashboard.totalStudents}
                     value={stats.totalStudents}
                     icon={<Users className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Siswa Aktif"
+                    label={t.adminDashboard.activeStudents}
                     value={stats.activeStudents}
                     icon={<CheckCircle2 className="w-5 h-5" />}
                     trend={stats.activeStudents > 0 ? { value: Math.round((stats.activeStudents / Math.max(stats.totalStudents, 1)) * 100), isPositive: true } : undefined}
                 />
                 <StatCard
-                    label="Iuran Tertunggak"
+                    label={t.adminDashboard.overduePayments}
                     value={stats.expiredPayments}
                     icon={<AlertCircle className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Total Try Out"
+                    label={t.adminDashboard.totalTryouts}
                     value={stats.totalTryouts}
                     icon={<FileText className="w-5 h-5" />}
                 />
@@ -136,7 +138,7 @@ export default function AdminDashboard() {
 
             <div className="grid lg:grid-cols-2 gap-6">
                 <div className="admin-card p-6">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Distribusi Kelas</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-4">{t.adminDashboard.classDistribution}</h2>
                     {classDistribution.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={classDistribution}>
@@ -164,13 +166,13 @@ export default function AdminDashboard() {
                         </ResponsiveContainer>
                     ) : (
                         <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">
-                            Belum ada data
+                            {t.common.noData}
                         </div>
                     )}
                 </div>
 
                 <div className="admin-card p-6">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Status Pembayaran</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-4">{t.adminDashboard.paymentStatus}</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
@@ -198,12 +200,15 @@ export default function AdminDashboard() {
                         </PieChart>
                     </ResponsiveContainer>
                     <div className="flex justify-center gap-4 mt-2">
-                        {paymentStatus.map((status) => (
-                            <div key={status.name} className="flex items-center gap-1.5 text-xs text-foreground/50">
-                                <span className="w-2.5 h-2.5 rounded-full" style={{ background: status.color }} />
-                                {status.name}: {status.value}
-                            </div>
-                        ))}
+                        {paymentStatus.map((status) => {
+                            const labelMap: Record<string, string> = { active: t.common.active, expired: t.common.expired, pending: t.common.pending };
+                            return (
+                                <div key={status.name} className="flex items-center gap-1.5 text-xs text-foreground/50">
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: status.color }} />
+                                    {labelMap[status.name] || status.name}: {status.value}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

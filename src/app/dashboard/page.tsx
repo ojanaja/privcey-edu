@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Announcement, TryOutAttempt, TryOut } from '@/types/database';
+import { useTranslation } from '@/lib/i18n';
 
 export default function StudentDashboard() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [recentAttempts, setRecentAttempts] = useState<TryOutAttempt[]>([]);
     const [upcomingTryouts, setUpcomingTryouts] = useState<TryOut[]>([]);
@@ -103,12 +105,12 @@ export default function StudentDashboard() {
         <motion.div variants={container} initial="hidden" animate="show">
             <motion.div variants={item} className="mb-8">
                 <h1 className="text-2xl font-bold text-foreground mb-1">
-                    Selamat datang, {user?.full_name?.split(' ')[0]}! 👋
+                    {t.studentDashboard.welcome}, {user?.full_name?.split(' ')[0]}! 👋
                 </h1>
                 <p className="text-foreground/40 text-sm">
                     {user?.payment_status === 'active'
-                        ? 'Akun aktif — Selamat belajar!'
-                        : 'Perbarui pembayaran untuk akses penuh'}
+                        ? t.studentDashboard.accountActive
+                        : t.studentDashboard.renewPayment}
                 </p>
             </motion.div>
 
@@ -116,23 +118,23 @@ export default function StudentDashboard() {
 
             <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
-                    label="Total Try Out"
+                    label={t.studentDashboard.totalTryout}
                     value={stats.totalAttempts}
                     icon={<FileText className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Rata-rata Nilai"
+                    label={t.studentDashboard.avgScore}
                     value={stats.avgScore}
                     icon={<BarChart3 className="w-5 h-5" />}
                     trend={stats.avgScore > 0 ? { value: 5, isPositive: true } : undefined}
                 />
                 <StatCard
-                    label="Nilai Tertinggi"
+                    label={t.studentDashboard.bestScore}
                     value={stats.bestScore}
                     icon={<Trophy className="w-5 h-5" />}
                 />
                 <StatCard
-                    label="Mata Pelajaran"
+                    label={t.studentDashboard.subjects}
                     value={stats.totalSubjects}
                     icon={<BookOpen className="w-5 h-5" />}
                 />
@@ -144,13 +146,13 @@ export default function StudentDashboard() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-accent-1" />
-                                Nilai Terbaru
+                                {t.studentDashboard.recentScores}
                             </h2>
                             <Link
                                 href="/dashboard/scores"
                                 className="text-xs text-accent-1 hover:text-accent-2 transition-colors"
                             >
-                                Lihat Semua →
+                                {t.studentDashboard.viewAll} →
                             </Link>
                         </div>
 
@@ -198,7 +200,7 @@ export default function StudentDashboard() {
                         ) : (
                             <div className="text-center py-8 text-foreground/30 text-sm">
                                 <Target className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                                Belum ada nilai. Mulai kerjakan Try Out pertamamu!
+                                {t.studentDashboard.noScoresYet}
                             </div>
                         )}
                     </GlassCard>
@@ -206,21 +208,21 @@ export default function StudentDashboard() {
 
                 <motion.div variants={item} className="space-y-6">
                     <GlassCard hoverable={false} padding="md" className="text-center">
-                        <h3 className="text-sm font-medium text-foreground/50 mb-4">Rata-rata Performa</h3>
+                        <h3 className="text-sm font-medium text-foreground/50 mb-4">{t.studentDashboard.avgPerformance}</h3>
                         <ScoreRing score={stats.avgScore} size={140} />
                         <p className="text-xs text-foreground/30 mt-3">
                             {stats.avgScore >= 80
-                                ? 'Luar biasa! Pertahankan! 🌟'
+                                ? t.studentDashboard.excellent
                                 : stats.avgScore >= 60
-                                    ? 'Bagus! Terus tingkatkan! 💪'
-                                    : 'Ayo semangat belajar! 📚'}
+                                    ? t.studentDashboard.good
+                                    : t.studentDashboard.keepLearning}
                         </p>
                     </GlassCard>
 
                     <GlassCard hoverable={false} padding="md">
                         <h3 className="text-sm font-medium text-foreground/50 mb-3 flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Try Out Mendatang
+                            {t.studentDashboard.upcomingTryouts}
                         </h3>
                         {upcomingTryouts.length > 0 ? (
                             <div className="space-y-2">
@@ -234,7 +236,7 @@ export default function StudentDashboard() {
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge variant="info">{tryout.subject?.name}</Badge>
                                             <span className="text-[10px] text-foreground/30">
-                                                {tryout.duration_minutes} menit
+                                                {tryout.duration_minutes} {t.common.minutes}
                                             </span>
                                         </div>
                                     </Link>
@@ -242,7 +244,7 @@ export default function StudentDashboard() {
                             </div>
                         ) : (
                             <p className="text-xs text-foreground/30 text-center py-4">
-                                Belum ada jadwal Try Out
+                                {t.studentDashboard.noSchedule}
                             </p>
                         )}
                     </GlassCard>
@@ -250,7 +252,7 @@ export default function StudentDashboard() {
                     <GlassCard hoverable={false} padding="md">
                         <h3 className="text-sm font-medium text-foreground/50 mb-3 flex items-center gap-2">
                             <Zap className="w-4 h-4" />
-                            Aksi Cepat
+                            {t.studentDashboard.quickActions}
                         </h3>
                         <div className="space-y-2">
                             <Link
@@ -258,14 +260,14 @@ export default function StudentDashboard() {
                                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-accent-1/10 border border-accent-1/20 hover:bg-accent-1/15 transition-all text-accent-1 text-sm"
                             >
                                 <FileText className="w-4 h-4" />
-                                Kerjakan Try Out
+                                {t.studentDashboard.doTryout}
                             </Link>
                             <Link
                                 href="/dashboard/latsol"
                                 className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] hover:bg-foreground/[0.05] transition-all text-foreground/60 text-sm"
                             >
                                 <BookOpen className="w-4 h-4" />
-                                Latihan Harian
+                                {t.studentDashboard.dailyExercise}
                             </Link>
                         </div>
                     </GlassCard>

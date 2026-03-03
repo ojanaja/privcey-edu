@@ -13,6 +13,7 @@ import {
     ArrowLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface ExQuestion {
     id: string;
@@ -33,6 +34,7 @@ export default function LatsolExercisePage({
     params: Promise<{ id: string }>;
 }) {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [exerciseId, setExerciseId] = useState<string | null>(null);
     const [exerciseTitle, setExerciseTitle] = useState('');
     const [questions, setQuestions] = useState<ExQuestion[]>([]);
@@ -108,15 +110,15 @@ export default function LatsolExercisePage({
         return (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <GlassCard hoverable={false} className="text-center py-16">
-                    <h3 className="text-lg font-medium text-foreground/50 mb-2">Belum Ada Soal</h3>
-                    <p className="text-sm text-foreground/30">Latihan ini belum memiliki soal.</p>
+                    <h3 className="text-lg font-medium text-foreground/50 mb-2">{t.latsol.noQuestions}</h3>
+                    <p className="text-sm text-foreground/30">{t.latsol.noQuestionsDesc}</p>
                     <Button
                         variant="outline"
                         className="mt-4"
                         onClick={() => (window.location.href = '/dashboard/latsol')}
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Kembali
+                        {t.common.back}
                     </Button>
                 </GlassCard>
             </motion.div>
@@ -135,11 +137,11 @@ export default function LatsolExercisePage({
                         >
                             <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
                         </motion.div>
-                        <h2 className="text-xl font-bold text-foreground mb-1">Latihan Selesai!</h2>
+                        <h2 className="text-xl font-bold text-foreground mb-1">{t.latsol.exerciseComplete}</h2>
                         <p className="text-foreground/40 text-sm mb-4">{exerciseTitle}</p>
                         <div className="text-4xl font-bold text-accent-1 mb-2">{score}</div>
                         <p className="text-foreground/40 text-sm">
-                            {totalCorrect} benar dari {questions.length} soal
+                            {totalCorrect} {t.latsol.correctOf} {questions.length} {t.latsol.questionOf.toLowerCase()}
                         </p>
                     </GlassCard>
 
@@ -193,7 +195,7 @@ export default function LatsolExercisePage({
                                     </div>
                                     {q.explanation && (
                                         <div className="mt-3 ml-10 p-3 rounded-lg bg-accent-1/10 border border-accent-1/20">
-                                            <p className="text-xs text-accent-1 font-medium mb-1">Pembahasan:</p>
+                                            <p className="text-xs text-accent-1 font-medium mb-1">{t.latsol.discussionLabel}</p>
                                             <p className="text-xs text-foreground/60">{q.explanation}</p>
                                         </div>
                                     )}
@@ -208,7 +210,7 @@ export default function LatsolExercisePage({
                             onClick={() => (window.location.href = '/dashboard/latsol')}
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Kembali ke Daftar Latihan
+                            {t.latsol.backToList}
                         </Button>
                     </div>
                 </div>
@@ -222,11 +224,11 @@ export default function LatsolExercisePage({
                 <div>
                     <h1 className="text-lg font-bold text-foreground">{exerciseTitle}</h1>
                     <p className="text-foreground/40 text-xs">
-                        Soal {currentIndex + 1} dari {questions.length}
+                        {t.latsol.questionOf} {currentIndex + 1} / {questions.length}
                     </p>
                 </div>
                 <Button variant="danger" size="sm" onClick={handleSubmit}>
-                    Selesai & Lihat Hasil
+                    {t.latsol.finishAndView}
                 </Button>
             </div>
 
@@ -295,7 +297,7 @@ export default function LatsolExercisePage({
                                         disabled={currentIndex === 0}
                                     >
                                         <ChevronLeft className="w-4 h-4" />
-                                        Sebelumnya
+                                        {t.common.previous}
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -305,7 +307,7 @@ export default function LatsolExercisePage({
                                         }
                                         disabled={currentIndex === questions.length - 1}
                                     >
-                                        Selanjutnya
+                                        {t.common.next}
                                         <ChevronRight className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -316,7 +318,7 @@ export default function LatsolExercisePage({
 
                 <div className="lg:w-56 flex-shrink-0">
                     <GlassCard hoverable={false} padding="md" className="lg:sticky lg:top-6">
-                        <h3 className="text-sm font-medium text-foreground/60 mb-3">Navigasi</h3>
+                        <h3 className="text-sm font-medium text-foreground/60 mb-3">{t.latsol.navigation}</h3>
                         <div className="grid grid-cols-5 gap-2">
                             {questions.map((q, idx) => {
                                 const isAnswered = answers.has(q.id);
@@ -343,11 +345,11 @@ export default function LatsolExercisePage({
                         <div className="mt-3 pt-3 border-t border-foreground/5 space-y-1 text-[10px] text-foreground/40">
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded bg-green-500/20 border border-green-500/30" />
-                                Dijawab ({answers.size})
+                                {t.common.answered} ({answers.size})
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded bg-foreground/5 border border-foreground/[0.06]" />
-                                Belum ({questions.length - answers.size})
+                                {t.common.notYet} ({questions.length - answers.size})
                             </div>
                         </div>
                     </GlassCard>

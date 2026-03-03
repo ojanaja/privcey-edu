@@ -9,9 +9,11 @@ import { FileText, Clock, Target, ChevronRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import type { TryOut } from '@/types/database';
 import { formatDateTime } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 export default function TryOutListPage() {
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [tryouts, setTryouts] = useState<TryOut[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
@@ -47,10 +49,10 @@ export default function TryOutListPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
                         <FileText className="w-6 h-6 text-accent-1" />
-                        Try Out
+                        {t.tryoutList.title}
                     </h1>
                     <p className="text-foreground/40 text-sm mt-1">
-                        Pilih Try Out dan uji kemampuanmu
+                        {t.tryoutList.subtitle}
                     </p>
                 </div>
             </div>
@@ -62,11 +64,11 @@ export default function TryOutListPage() {
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`px-4 py-1.5 rounded-lg text-sm transition-all ${filter === f
-                                ? 'bg-accent-1/20 text-accent-1 border border-accent-1/30'
-                                : 'text-foreground/40 hover:text-foreground/60 border border-transparent'
+                            ? 'bg-accent-1/20 text-accent-1 border border-accent-1/30'
+                            : 'text-foreground/40 hover:text-foreground/60 border border-transparent'
                             }`}
                     >
-                        {f === 'all' ? 'Semua' : f === 'active' ? 'Aktif' : 'Selesai'}
+                        {f === 'all' ? t.tryoutList.filterAll : f === 'active' ? t.tryoutList.filterActive : t.tryoutList.filterCompleted}
                     </button>
                 ))}
             </div>
@@ -98,20 +100,20 @@ export default function TryOutListPage() {
                                     <div className="flex items-center gap-4 text-xs text-foreground/30">
                                         <span className="flex items-center gap-1">
                                             <Clock className="w-3.5 h-3.5" />
-                                            {tryout.duration_minutes} menit
+                                            {tryout.duration_minutes} {t.common.minutes}
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <Target className="w-3.5 h-3.5" />
-                                            KKM: {tryout.passing_grade}
+                                            {t.tryoutList.passingGrade} {tryout.passing_grade}
                                         </span>
                                     </div>
                                     {tryout.start_time && (
                                         <p className="text-[10px] text-foreground/20 mt-3">
-                                            Mulai: {formatDateTime(tryout.start_time)}
+                                            {t.tryoutList.startTime} {formatDateTime(tryout.start_time)}
                                         </p>
                                     )}
                                     <div className="flex items-center justify-end mt-3 text-accent-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                                        Kerjakan <ChevronRight className="w-3.5 h-3.5" />
+                                        {t.tryoutList.doTryout} <ChevronRight className="w-3.5 h-3.5" />
                                     </div>
                                 </GlassCard>
                             </Link>
@@ -121,9 +123,9 @@ export default function TryOutListPage() {
             ) : (
                 <GlassCard hoverable={false} className="text-center py-16">
                     <BookOpen className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground/50 mb-2">Belum Ada Try Out</h3>
+                    <h3 className="text-lg font-medium text-foreground/50 mb-2">{t.tryoutList.noTryouts}</h3>
                     <p className="text-sm text-foreground/30">
-                        Try Out akan ditampilkan di sini saat tutor menambahkannya.
+                        {t.tryoutList.noTryoutsDesc}
                     </p>
                 </GlassCard>
             )}

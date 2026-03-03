@@ -3,6 +3,7 @@
 import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { forwardRef } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 interface GlassCardProps extends HTMLMotionProps<'div'> {
     children: React.ReactNode;
@@ -165,6 +166,7 @@ interface ScoreRingProps {
 }
 
 export function ScoreRing({ score, size = 120, strokeWidth = 8, className }: ScoreRingProps) {
+    const { t } = useTranslation();
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (score / 100) * circumference;
@@ -201,7 +203,7 @@ export function ScoreRing({ score, size = 120, strokeWidth = 8, className }: Sco
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-foreground">{Math.round(score)}</span>
-                <span className="text-xs text-foreground/50">poin</span>
+                <span className="text-xs text-foreground/50">{t.ui.scoreRingLabel}</span>
             </div>
         </div>
     );
