@@ -1,0 +1,192 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useAuthStore } from '@/stores/auth-store';
+import { createClient } from '@/lib/supabase/client';
+import { GlassCard, Badge, LoadingSpinner, Button } from '@/components/ui';
+import { Radio, Calendar, Clock, ExternalLink, User } from 'lucide-react';
+import type { LiveClass } from '@/types/database';
+import { formatDateTime } from '@/lib/utils';
+
+export default function LiveClassPage() {
+    const { user } = useAuthStore();
+    const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const supabase = createClient();
+
+        const fetchLiveClasses = async () => {
+            const { data } = await supabase
+                .from('live_classes')
+                .select('*, subject:subjects(name, icon), tutor:profiles(full_name)')
+                .eq('is_active', true)
+                .order('scheduled_at', { ascending: true });
+
+            if (data) setLiveClasses(data);
+            setIsLoading(false);
+        };
+
+        fetchLiveClasses();
+    }, []);
+
+    const handleJoin = async (lc: LiveClass) => {
+        if (user) {
+            const supabase = createClient();
+            await supabase.from('attendance_logs').insert({
+                student_id: user.id,
+                activity_type: 'live_class',
+                activity_id: lc.id,
+                activity_title: lc.title,
+            });
+        }
+        window.open(lc.meet_url, '_blank');
+    };
+
+    if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
+
+    const now = new Date();
+    const upcoming = liveClasses.filter((lc) => new Date(lc.scheduled_at) >= now);
+    const past = liveClasses.filter((lc) => new Date(lc.scheduled_at) < now);
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+            <div className="mb-8">
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                    <Radio className="w-6 h-6 text-accent-1" />
+                    Live Class
+                </h1>
+                <p className="text-foreground/40 text-sm mt-1">Jadwal kelas online via Google Meet / Zoom</p>
+            </div>
+
+            {upcoming.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider mb-4">
+                        Akan Datang
+                    </h2>
+                    <div className="space-y-4">
+                        {upcoming.map((lc, idx) => {
+                            const scheduledDate = new Date(lc.scheduled_at);
+                            const diffMs = scheduledDate.getTime() - now.getTime();
+                            const diffMins = Math.floor(diffMs / 60000);
+                            const isLive = diffMins <= 15 && diffMins >= -120;
+
+                            return (
+                                <motion.div
+                                    key={lc.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                >
+                                    <GlassCard padding="md" className="relative overflow-hidden">
+                                        {isLive && (
+                                            <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500 animate-pulse" />
+                                        )}
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-14 h-14 rounded-xl bg-accent-1/20 flex flex-col items-center justify-center text-accent-1 flex-shrink-0">
+                                                <span className="text-lg font-bold leading-none">
+                                                    {scheduledDate.getDate()}
+                                                </span>
+                                                <span className="text-[10px] text-accent-1/70 uppercase">
+                                                    {scheduledDate.toLocaleString('id', { month: 'short' })}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="text-base font-semibold text-foreground truncate">
+                                                        {lc.title}
+                                                    </h3>
+                                                    {isLive && (
+                                                        <Badge variant="danger">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse mr-1" />
+                                                            LIVE
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                    <Badge variant="info">
+                                                        {lc.subject?.icon} {lc.subject?.name || 'Umum'}
+                                                    </Badge>
+                                                    <span className="text-xs text-foreground/30 flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {scheduledDate.toLocaleTimeString('id', {
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                        })}{' '}
+                                                        WIB
+                                                    </span>
+                                                    {lc.tutor && (
+                                                        <span className="text-xs text-foreground/30 flex items-center gap-1">
+                                                            <User className="w-3 h-3" />
+                                                            {(lc.tutor as unknown as { full_name: string }).full_name}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {lc.description && (
+                                                    <p className="text-sm text-foreground/40 mb-3">{lc.description}</p>
+                                                )}
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                variant={isLive ? 'primary' : 'outline'}
+                                                onClick={() => handleJoin(lc)}
+                                                className="flex-shrink-0"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                                {isLive ? 'Gabung Sekarang' : 'Buka Link'}
+                                            </Button>
+                                        </div>
+                                    </GlassCard>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {past.length > 0 && (
+                <div>
+                    <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider mb-4">
+                        Sudah Berlalu
+                    </h2>
+                    <div className="space-y-3">
+                        {past.map((lc, idx) => (
+                            <motion.div
+                                key={lc.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.03 }}
+                            >
+                                <GlassCard padding="sm" className="opacity-60">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-lg">{lc.subject?.icon || '📚'}</span>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-sm font-medium text-foreground truncate">
+                                                {lc.title}
+                                            </h3>
+                                            <span className="text-xs text-foreground/30">
+                                                {formatDateTime(lc.scheduled_at)}
+                                            </span>
+                                        </div>
+                                        <Badge>Selesai</Badge>
+                                    </div>
+                                </GlassCard>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {liveClasses.length === 0 && (
+                <GlassCard hoverable={false} className="text-center py-16">
+                    <Radio className="w-12 h-12 text-foreground/20 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground/50 mb-2">Belum Ada Jadwal</h3>
+                    <p className="text-sm text-foreground/30">
+                        Jadwal live class akan muncul di sini saat tutor atau admin menjadwalkannya.
+                    </p>
+                </GlassCard>
+            )}
+        </motion.div>
+    );
+}
