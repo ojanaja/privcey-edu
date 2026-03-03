@@ -111,7 +111,8 @@ CREATE TABLE student_answers (
   question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
   selected_answer answer_option,
   is_correct BOOLEAN,
-  answered_at TIMESTAMPTZ
+  answered_at TIMESTAMPTZ,
+  UNIQUE (attempt_id, question_id)
 );
 
 -- Announcements
