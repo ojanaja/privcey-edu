@@ -1,0 +1,346 @@
+@import "tailwindcss";
+
+/* ============================================
+   PRIVCEY EDU - Clean Neutral Design System
+   Light / Dark Theme
+   ============================================ */
+
+/* ---- Light Mode (Default) ---- */
+:root {
+  --background: #f8f9fb;
+  --foreground: #111827;
+
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-hover: #ffffff;
+
+  --accent-1: #4f46e5;
+  --accent-2: #6366f1;
+  --accent-3: #818cf8;
+  --accent-4: #a5b4fc;
+
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --danger: #dc2626;
+  --info: #2563eb;
+
+  --glass-blur: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.06);
+
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+
+  --placeholder: #9ca3af;
+  --ring-track: rgba(0, 0, 0, 0.08);
+  --tooltip-bg: #1e1e2e;
+  --tooltip-border: rgba(255, 255, 255, 0.1);
+  --tooltip-color: #ffffff;
+}
+
+/* ---- Dark Mode ---- */
+.dark {
+  --background: #0a0a1a;
+  --foreground: #f0f0ff;
+
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-hover: rgba(255, 255, 255, 0.1);
+
+  --accent-1: #6366f1;
+  --accent-2: #818cf8;
+  --accent-3: #a5b4fc;
+  --accent-4: #c4b5fd;
+
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  --glass-blur: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --sidebar-bg: rgba(10, 10, 26, 0.9);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+
+  --placeholder: rgba(255, 255, 255, 0.35);
+  --ring-track: rgba(255, 255, 255, 0.06);
+  --tooltip-bg: rgba(15, 15, 46, 0.95);
+  --tooltip-border: rgba(255, 255, 255, 0.1);
+  --tooltip-color: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-accent-1: var(--accent-1);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-4: var(--accent-4);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.2) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.2);
+  border-radius: 3px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    var(--font-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
+  min-height: 100vh;
+}
+
+/* ============================================
+   Background (clean, no gradient)
+   ============================================ */
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--background);
+}
+
+/* ============================================
+   Components
+   ============================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-1) / 0.2;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.06);
+  transform: translateY(-2px);
+}
+
+.glass-sidebar {
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid var(--sidebar-border);
+}
+
+.glass-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  color: var(--foreground);
+  transition: all 0.2s;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.glass-input::placeholder {
+  color: var(--placeholder);
+}
+
+/* Buttons (solid, no gradient) */
+.glass-button {
+  background: var(--accent-1);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-button:hover {
+  background: var(--accent-2);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+}
+
+.glass-button:active {
+  transform: translateY(0);
+}
+
+.glass-button-outline {
+  background: transparent;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 12px;
+  color: var(--accent-1);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.glass-button-outline:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+/* ============================================
+   Accent Text (solid, no gradient)
+   ============================================ */
+.gradient-text {
+  color: var(--accent-1);
+}
+
+/* ============================================
+   Subtle Effects
+   ============================================ */
+.glow {
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.1);
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   Admin Dashboard
+   ============================================ */
+.admin-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.admin-card:hover {
+  border-color: var(--accent-1) / 0.15;
+}
+
+.admin-input {
+  background: var(--glass-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--foreground);
+  transition: border-color 0.2s;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--accent-1);
+}
+
+.admin-table th {
+  background: var(--glass-bg);
+  color: var(--foreground);
+  opacity: 0.5;
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-table td {
+  border-bottom: 1px solid var(--card-border);
+}
+
+.admin-table tr:hover td {
+  background: var(--glass-bg);
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ============================================
+   Score Ring (for circular progress)
+   ============================================ */
+.score-ring {
+  transform: rotate(-90deg);
+}
+
+.score-ring-circle {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
