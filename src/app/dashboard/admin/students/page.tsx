@@ -1,0 +1,208 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { createClient } from '@/lib/supabase/client';
+import { Badge, Button, LoadingSpinner } from '@/components/ui';
+import { Users, Search, Download, CheckCircle2, XCircle, Clock, Edit2 } from 'lucide-react';
+import type { Profile, ClassGroup } from '@/types/database';
+import { formatDate, cn } from '@/lib/utils';
+
+export default function AdminStudentsPage() {
+    const [students, setStudents] = useState<Profile[]>([]);
+    const [classes, setClasses] = useState<ClassGroup[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterClass, setFilterClass] = useState('all');
+    const [filterPayment, setFilterPayment] = useState('all');
+
+    useEffect(() => {
+        const supabase = createClient();
+
+        const fetchData = async () => {
+            const { data: studentData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'student')
+                .order('full_name');
+
+            if (studentData) setStudents(studentData);
+
+            const { data: classData } = await supabase
+                .from('class_groups')
+                .select('*')
+                .order('name');
+
+            if (classData) setClasses(classData);
+            setIsLoading(false);
+        };
+
+        fetchData();
+    }, []);
+
+    const togglePaymentStatus = async (studentId: string, currentStatus: string) => {
+        const supabase = createClient();
+        const newStatus = currentStatus === 'active' ? 'expired' : 'active';
+        const expiresAt = newStatus === 'active'
+            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            : null;
+
+        await supabase
+            .from('profiles')
+            .update({ payment_status: newStatus, payment_expires_at: expiresAt })
+            .eq('id', studentId);
+
+        setStudents((prev) =>
+            prev.map((s) =>
+                s.id === studentId ? { ...s, payment_status: newStatus as any, payment_expires_at: expiresAt } : s
+            )
+        );
+    };
+
+    const exportCSV = () => {
+        const headers = ['Nama', 'Email', 'Kelas', 'Status Pembayaran', 'Tanggal Daftar'];
+        const rows = filteredStudents.map((s) => [
+            s.full_name,
+            s.email,
+            classes.find((c) => c.id === s.class_id)?.name || '-',
+            s.payment_status,
+            formatDate(s.created_at),
+        ]);
+
+        const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'siswa-privcey-edu.csv';
+        a.click();
+    };
+
+    const filteredStudents = students.filter((s) => {
+        const matchSearch =
+            s.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            s.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchClass = filterClass === 'all' || s.class_id === filterClass;
+        const matchPayment = filterPayment === 'all' || s.payment_status === filterPayment;
+        return matchSearch && matchClass && matchPayment;
+    });
+
+    if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                        <Users className="w-6 h-6 text-accent-1" />
+                        Manajemen Siswa
+                    </h1>
+                    <p className="text-foreground/40 text-sm mt-1">{students.length} siswa terdaftar</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={exportCSV}>
+                    <Download className="w-4 h-4" />
+                    Export CSV
+                </Button>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 mb-6">
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
+                    <input
+                        type="text"
+                        placeholder="Cari nama atau email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="admin-input w-full pl-10 pr-4 py-2 text-sm"
+                    />
+                </div>
+                <select
+                    value={filterClass}
+                    onChange={(e) => setFilterClass(e.target.value)}
+                    className="admin-input px-3 py-2 text-sm"
+                >
+                    <option value="all">Semua Kelas</option>
+                    {classes.map((cls) => (
+                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                    ))}
+                </select>
+                <select
+                    value={filterPayment}
+                    onChange={(e) => setFilterPayment(e.target.value)}
+                    className="admin-input px-3 py-2 text-sm"
+                >
+                    <option value="all">Semua Status</option>
+                    <option value="active">Aktif</option>
+                    <option value="expired">Expired</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+
+            {/* Table */}
+            <div className="admin-card overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full admin-table">
+                        <thead>
+                            <tr>
+                                <th className="px-4 py-3 text-left">Nama</th>
+                                <th className="px-4 py-3 text-left">Email</th>
+                                <th className="px-4 py-3 text-left">Kelas</th>
+                                <th className="px-4 py-3 text-center">Pembayaran</th>
+                                <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredStudents.map((student) => (
+                                <tr key={student.id}>
+                                    <td className="px-4 py-3 text-sm text-foreground font-medium">
+                                        {student.full_name}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-foreground/50">{student.email}</td>
+                                    <td className="px-4 py-3 text-sm text-foreground/50">
+                                        {classes.find((c) => c.id === student.class_id)?.name || '-'}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <Badge
+                                            variant={
+                                                student.payment_status === 'active'
+                                                    ? 'success'
+                                                    : student.payment_status === 'expired'
+                                                        ? 'danger'
+                                                        : 'warning'
+                                            }
+                                        >
+                                            {student.payment_status === 'active' && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                            {student.payment_status === 'expired' && <XCircle className="w-3 h-3 mr-1" />}
+                                            {student.payment_status === 'pending' && <Clock className="w-3 h-3 mr-1" />}
+                                            {student.payment_status}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <Badge variant={student.is_active ? 'success' : 'danger'}>
+                                            {student.is_active ? 'Aktif' : 'Nonaktif'}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => togglePaymentStatus(student.id, student.payment_status)}
+                                            className="text-xs text-accent-1 hover:text-accent-2 transition-colors px-2 py-1 rounded hover:bg-accent-1/10"
+                                        >
+                                            Toggle Bayar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {filteredStudents.length === 0 && (
+                    <div className="text-center py-12 text-foreground/30 text-sm">
+                        Tidak ada siswa ditemukan
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+}
