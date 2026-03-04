@@ -33,6 +33,7 @@ export default function AdminAnalyticsPage() {
     const [difficultyStats, setDifficultyStats] = useState<any[]>([]);
     const [monthlyAttempts, setMonthlyAttempts] = useState<any[]>([]);
     const [topStudents, setTopStudents] = useState<any[]>([]);
+    const [hardestQuestions, setHardestQuestions] = useState<any[]>([]);
 
     useEffect(() => {
         const supabase = createClient();
@@ -114,6 +115,45 @@ export default function AdminAnalyticsPage() {
                 setTopStudents(sorted);
             }
 
+            const { data: allAnswers } = await supabase
+                .from('student_answers')
+                .select('question_id, is_correct, question:questions(question_text, difficulty, tryout:tryouts(subject:subjects(name)))')
+                .not('is_correct', 'is', null);
+
+            if (allAnswers) {
+                const questionMap = new Map<string, { text: string; subject: string; difficulty: string; correct: number; total: number }>();
+                allAnswers.forEach((a: any) => {
+                    const qid = a.question_id;
+                    if (!questionMap.has(qid)) {
+                        questionMap.set(qid, {
+                            text: a.question?.question_text || '—',
+                            subject: a.question?.tryout?.subject?.name || '—',
+                            difficulty: a.question?.difficulty || 'medium',
+                            correct: 0,
+                            total: 0,
+                        });
+                    }
+                    const entry = questionMap.get(qid)!;
+                    entry.total++;
+                    if (a.is_correct) entry.correct++;
+                });
+
+                const hardest = Array.from(questionMap.entries())
+                    .filter(([, d]) => d.total >= 5)
+                    .map(([id, d]) => ({
+                        id,
+                        text: d.text.length > 80 ? d.text.slice(0, 80) + '…' : d.text,
+                        subject: d.subject,
+                        difficulty: d.difficulty,
+                        errorRate: Math.round(((d.total - d.correct) / d.total) * 100),
+                        total: d.total,
+                    }))
+                    .sort((a, b) => b.errorRate - a.errorRate)
+                    .slice(0, 10);
+
+                setHardestQuestions(hardest);
+            }
+
             setIsLoading(false);
         };
 
@@ -153,7 +193,7 @@ export default function AdminAnalyticsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
+                        <div className="h-62.5 flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
                     )}
                 </div>
 
@@ -179,9 +219,57 @@ export default function AdminAnalyticsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-[250px] flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
+                        <div className="h-62.5 flex items-center justify-center text-foreground/30 text-sm">{t.common.noData}</div>
                     )}
                 </div>
+            </div>
+
+            <div className="admin-card p-6 mb-6">
+                <h2 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-accent-1" />
+                    {t.adminAnalytics.hardestQuestions}
+                </h2>
+                <p className="text-xs text-foreground/30 mb-4">{t.adminAnalytics.hardestQuestionsDesc}</p>
+                {hardestQuestions.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full admin-table">
+                            <thead>
+                                <tr>
+                                    <th className="px-4 py-3 text-left">{t.adminAnalytics.rank}</th>
+                                    <th className="px-4 py-3 text-left">{t.adminAnalytics.questionText}</th>
+                                    <th className="px-4 py-3 text-center">{t.adminAnalytics.subject}</th>
+                                    <th className="px-4 py-3 text-center">{t.adminAnalytics.difficulty}</th>
+                                    <th className="px-4 py-3 text-center">{t.adminAnalytics.errorRate}</th>
+                                    <th className="px-4 py-3 text-center">{t.adminAnalytics.totalAnswered}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {hardestQuestions.map((q: any, idx: number) => (
+                                    <tr key={q.id}>
+                                        <td className="px-4 py-3 text-sm text-foreground/50 font-bold">#{idx + 1}</td>
+                                        <td className="px-4 py-3 text-sm text-foreground max-w-xs truncate">{q.text}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Badge variant="info">{q.subject}</Badge>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Badge variant={q.difficulty === 'hard' ? 'danger' : q.difficulty === 'easy' ? 'success' : 'warning'}>
+                                                {({ easy: t.adminAnalytics.easy, medium: t.adminAnalytics.medium, hard: t.adminAnalytics.hard })[q.difficulty as string] || q.difficulty}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`font-bold ${q.errorRate >= 70 ? 'text-red-400' : q.errorRate >= 40 ? 'text-yellow-400' : 'text-green-400'}`}>
+                                                {q.errorRate}%
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-foreground/50 text-center">{q.total}x</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-12 text-foreground/30 text-sm">{t.common.noData}</div>
+                )}
             </div>
 
             <div className="admin-card p-6">

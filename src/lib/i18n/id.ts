@@ -221,6 +221,13 @@ export const id: Translations = {
         easy: 'Mudah',
         medium: 'Sedang',
         hard: 'Sulit',
+        hardestQuestions: 'Soal Tersulit (Item Analysis)',
+        hardestQuestionsDesc: '10 soal dengan tingkat kesalahan tertinggi',
+        questionText: 'Teks Soal',
+        subject: 'Mapel',
+        difficulty: 'Kesulitan',
+        errorRate: 'Tingkat Error',
+        totalAnswered: 'Dijawab',
     },
 
     adminClasses: {

@@ -190,6 +190,13 @@ export interface Translations {
         easy: string;
         medium: string;
         hard: string;
+        hardestQuestions: string;
+        hardestQuestionsDesc: string;
+        questionText: string;
+        subject: string;
+        difficulty: string;
+        errorRate: string;
+        totalAnswered: string;
     };
 
     adminClasses: {

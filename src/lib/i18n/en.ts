@@ -221,6 +221,13 @@ export const en: Translations = {
         easy: 'Easy',
         medium: 'Medium',
         hard: 'Hard',
+        hardestQuestions: 'Hardest Questions (Item Analysis)',
+        hardestQuestionsDesc: 'Top 10 questions with highest error rate',
+        questionText: 'Question',
+        subject: 'Subject',
+        difficulty: 'Difficulty',
+        errorRate: 'Error Rate',
+        totalAnswered: 'Answered',
     },
 
     adminClasses: {
