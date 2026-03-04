@@ -37,69 +37,90 @@ export default function AdminDashboard() {
         totalTryouts: 0,
         avgClassScore: 0,
     });
-    const [classDistribution, setClassDistribution] = useState<any[]>([]);
-    const [paymentStatus, setPaymentStatus] = useState<any[]>([]);
+    const [classDistribution, setClassDistribution] = useState<{ name: string; students: number }[]>([]);
+    const [paymentStatus, setPaymentStatus] = useState<{ name: string; value: number; color: string }[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const supabase = createClient();
 
         const fetchStats = async () => {
-            const { count: totalStudents } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'student');
+            try {
+                const [studentsRes, activeRes, expiredRes, tryoutsRes, classesRes] = await Promise.all([
+                    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+                    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('payment_status', 'active'),
+                    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student').eq('payment_status', 'expired'),
+                    supabase.from('tryouts').select('*', { count: 'exact', head: true }),
+                    supabase.from('class_groups').select('name, id'),
+                ]);
 
-            const { count: activeStudents } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'student')
-                .eq('payment_status', 'active');
+                const totalStudents = studentsRes.count || 0;
+                const activeStudents = activeRes.count || 0;
+                const expiredPayments = expiredRes.count || 0;
 
-            const { count: expiredPayments } = await supabase
-                .from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .eq('role', 'student')
-                .eq('payment_status', 'expired');
+                setStats({
+                    totalStudents,
+                    activeStudents,
+                    expiredPayments,
+                    totalTryouts: tryoutsRes.count || 0,
+                    avgClassScore: 0,
+                });
 
-            const { count: totalTryouts } = await supabase
-                .from('tryouts')
-                .select('*', { count: 'exact', head: true });
+                if (classesRes.data) {
+                    const { data: studentsByClass } = await supabase
+                        .from('profiles')
+                        .select('class_id')
+                        .eq('role', 'student')
+                        .not('class_id', 'is', null);
 
-            setStats({
-                totalStudents: totalStudents || 0,
-                activeStudents: activeStudents || 0,
-                expiredPayments: expiredPayments || 0,
-                totalTryouts: totalTryouts || 0,
-                avgClassScore: 0,
-            });
+                    const classCountMap = new Map<string, number>();
+                    studentsByClass?.forEach((s) => {
+                        if (s.class_id) {
+                            classCountMap.set(s.class_id, (classCountMap.get(s.class_id) || 0) + 1);
+                        }
+                    });
 
-            const { data: classes } = await supabase
-                .from('class_groups')
-                .select('name, id');
+                    const dist = classesRes.data.map((cls) => ({
+                        name: cls.name,
+                        students: classCountMap.get(cls.id) || 0,
+                    }));
+                    setClassDistribution(dist);
+                }
 
-            if (classes) {
-                const dist = await Promise.all(
-                    classes.map(async (cls) => {
-                        const { count } = await supabase
-                            .from('profiles')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('class_id', cls.id)
-                            .eq('role', 'student');
-                        return { name: cls.name, students: count || 0 };
-                    })
-                );
-                setClassDistribution(dist);
+                setPaymentStatus([
+                    { name: 'active', value: activeStudents, color: '#22c55e' },
+                    { name: 'expired', value: expiredPayments, color: '#ef4444' },
+                    { name: 'pending', value: totalStudents - activeStudents - expiredPayments, color: '#eab308' },
+                ]);
+            } catch (err) {
+                console.error('[Admin] Failed to fetch stats:', err);
+                setError('Gagal memuat data admin dashboard.');
+            } finally {
+                setIsLoading(false);
             }
-
-            setPaymentStatus([
-                { name: 'active', value: activeStudents || 0, color: '#22c55e' },
-                { name: 'expired', value: expiredPayments || 0, color: '#ef4444' },
-                { name: 'pending', value: (totalStudents || 0) - (activeStudents || 0) - (expiredPayments || 0), color: '#eab308' },
-            ]);
         };
 
         fetchStats();
     }, []);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-[50vh] flex items-center justify-center">
+                <div className="text-foreground/40 text-sm">{t.common.loading}</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-[40vh] flex items-center justify-center">
+                <div className="text-center p-6 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <p className="text-red-400 text-sm">{error}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <motion.div

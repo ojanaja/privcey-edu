@@ -20,34 +20,60 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
 }
 
 export async function GET(request: NextRequest) {
-    const supabase = await createClient();
-    const auth = await verifyAdmin(supabase);
-    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    try {
+        const supabase = await createClient();
+        const auth = await verifyAdmin(supabase);
+        if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-    const { searchParams } = new URL(request.url);
-    const role = searchParams.get('role');
-    const search = searchParams.get('search');
+        const { searchParams } = new URL(request.url);
+        const role = searchParams.get('role');
+        const search = searchParams.get('search');
 
-    let query = supabase
-        .from('profiles')
-        .select('*, class_groups(name)')
-        .order('created_at', { ascending: false });
+        let query = supabase
+            .from('profiles')
+            .select('*, class_groups(name)')
+            .order('created_at', { ascending: false });
 
-    if (role && role !== 'all') {
-        query = query.eq('role', role);
+        if (role && role !== 'all') {
+            query = query.eq('role', role);
+        }
+
+        if (search && search.trim()) {
+            const sanitized = search.trim().replace(/[%_\\]/g, '\\$&');
+            query = query.or(`full_name.ilike.%${sanitized}%,email.ilike.%${sanitized}%`);
+        }
+
+        let { data, error } = await query;
+
+        if (error) {
+            console.error('[admin/users GET] Query with join failed, trying without join:', error.message);
+            let fallbackQuery = supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (role && role !== 'all') {
+                fallbackQuery = fallbackQuery.eq('role', role);
+            }
+
+            if (search && search.trim()) {
+                const sanitized = search.trim().replace(/[%_\\]/g, '\\$&');
+                fallbackQuery = fallbackQuery.or(`full_name.ilike.%${sanitized}%,email.ilike.%${sanitized}%`);
+            }
+
+            const fallback = await fallbackQuery;
+            if (fallback.error) {
+                console.error('[admin/users GET] Fallback also failed:', fallback.error);
+                return NextResponse.json({ error: fallback.error.message }, { status: 500 });
+            }
+            data = fallback.data;
+        }
+
+        return NextResponse.json({ users: data });
+    } catch (err) {
+        console.error('[admin/users GET] Unexpected error:', err);
+        return NextResponse.json({ error: String(err) }, { status: 500 });
     }
-
-    if (search) {
-        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ users: data });
 }
 
 export async function POST(request: NextRequest) {
@@ -65,9 +91,9 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
         return NextResponse.json(
-            { error: 'Password minimal 6 karakter' },
+            { error: 'Password minimal 8 karakter dan harus mengandung huruf dan angka' },
             { status: 400 }
         );
     }

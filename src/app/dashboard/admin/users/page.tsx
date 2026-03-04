@@ -53,7 +53,7 @@ export default function AdminUsersPage() {
 
     const fetchUsers = useCallback(async () => {
         setIsLoading(true);
-        const res = await fetch(`/api/admin/users?role=${filterRole}&search=${searchTerm}`);
+        const res = await fetch(`/api/admin/users?role=${encodeURIComponent(filterRole)}&search=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         if (data.users) setUsers(data.users);
         setIsLoading(false);

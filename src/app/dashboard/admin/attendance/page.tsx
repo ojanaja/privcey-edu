@@ -87,7 +87,6 @@ export default function AdminAttendancePage() {
                 </Button>
             </div>
 
-            {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
@@ -112,7 +111,6 @@ export default function AdminAttendancePage() {
                 </select>
             </div>
 
-            {/* Table */}
             <div className="admin-card overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full admin-table">

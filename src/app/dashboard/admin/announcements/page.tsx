@@ -106,7 +106,6 @@ export default function AdminAnnouncementsPage() {
                 </Button>
             </div>
 
-            {/* Create Form */}
             {showForm && (
                 <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -176,7 +175,6 @@ export default function AdminAnnouncementsPage() {
                 </motion.div>
             )}
 
-            {/* Announcements List */}
             <div className="space-y-3">
                 {announcements.map((ann, idx) => (
                     <motion.div

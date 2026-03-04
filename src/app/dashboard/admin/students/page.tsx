@@ -9,6 +9,8 @@ import type { Profile, ClassGroup } from '@/types/database';
 import { formatDate, cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 
+const PAGE_SIZE = 25;
+
 export default function AdminStudentsPage() {
     const { t } = useTranslation();
     const [students, setStudents] = useState<Profile[]>([]);
@@ -17,6 +19,7 @@ export default function AdminStudentsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClass, setFilterClass] = useState('all');
     const [filterPayment, setFilterPayment] = useState('all');
+    const [page, setPage] = useState(0);
 
     useEffect(() => {
         const supabase = createClient();
@@ -89,6 +92,13 @@ export default function AdminStudentsPage() {
         return matchSearch && matchClass && matchPayment;
     });
 
+    const totalFiltered = filteredStudents.length;
+    const paginatedStudents = filteredStudents.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+    useEffect(() => {
+        setPage(0);
+    }, [searchTerm, filterClass, filterPayment]);
+
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
 
     return (
@@ -107,7 +117,6 @@ export default function AdminStudentsPage() {
                 </Button>
             </div>
 
-            {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-6">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
@@ -141,7 +150,6 @@ export default function AdminStudentsPage() {
                 </select>
             </div>
 
-            {/* Table */}
             <div className="admin-card overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full admin-table">
@@ -156,7 +164,7 @@ export default function AdminStudentsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredStudents.map((student) => (
+                            {paginatedStudents.map((student) => (
                                 <tr key={student.id}>
                                     <td className="px-4 py-3 text-sm text-foreground font-medium">
                                         {student.full_name}
@@ -199,9 +207,33 @@ export default function AdminStudentsPage() {
                         </tbody>
                     </table>
                 </div>
-                {filteredStudents.length === 0 && (
+                {paginatedStudents.length === 0 && (
                     <div className="text-center py-12 text-foreground/30 text-sm">
                         {t.adminStudents.noStudents}
+                    </div>
+                )}
+
+                {totalFiltered > PAGE_SIZE && (
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-foreground/5">
+                        <p className="text-xs text-foreground/40">
+                            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalFiltered)} dari {totalFiltered}
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="px-3 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+                            >
+                                ← Prev
+                            </button>
+                            <button
+                                onClick={() => setPage((p) => p + 1)}
+                                disabled={(page + 1) * PAGE_SIZE >= totalFiltered}
+                                className="px-3 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+                            >
+                                Next →
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
