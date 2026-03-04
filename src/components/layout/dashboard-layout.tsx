@@ -6,26 +6,33 @@ import { createClient } from '@/lib/supabase/client';
 import { Sidebar } from './sidebar';
 import { LoadingSpinner } from '@/components/ui';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/lib/i18n';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, setUser, setLoading } = useAuthStore();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const supabase = createClient();
-            const {
-                data: { user: authUser },
-            } = await supabase.auth.getUser();
+            try {
+                const supabase = createClient();
+                const {
+                    data: { user: authUser },
+                } = await supabase.auth.getUser();
 
-            if (authUser) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', authUser.id)
-                    .single();
+                if (authUser) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', authUser.id)
+                        .single();
 
-                setUser(profile);
-            } else {
+                    setUser(profile);
+                } else {
+                    setUser(null);
+                }
+            } catch (err) {
+                console.error('[DashboardLayout] Failed to fetch profile:', err);
                 setUser(null);
             }
         };
@@ -38,16 +45,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="text-center">
                     <LoadingSpinner className="mb-4" />
-                    <p className="text-foreground/40 text-sm">Memuat...</p>
+                    <p className="text-foreground/40 text-sm">{t.common.loading}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex bg-background">
+        <div className="min-h-screen bg-background">
             <Sidebar />
-            <main className="flex-1 lg:ml-0 overflow-auto">
+            <main className="lg:ml-64 overflow-auto">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

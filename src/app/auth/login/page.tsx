@@ -72,7 +72,6 @@ function LoginContent() {
                 transition={{ duration: 0.6 }}
                 className="w-full max-w-md"
             >
-                {/* Logo */}
                 <div className="text-center mb-8">
                     <motion.div
                         initial={{ scale: 0 }}

@@ -47,10 +47,11 @@ export default function StaffLoginPage() {
                 setIsLoading(false);
                 return;
             }
-        }
 
-        router.push('/dashboard');
-        router.refresh();
+            const dest = profile.role === 'admin' ? '/dashboard/admin' : '/dashboard/tutor';
+            router.push(dest);
+            router.refresh();
+        }
     };
 
     return (
@@ -63,7 +64,6 @@ export default function StaffLoginPage() {
                 transition={{ duration: 0.4 }}
                 className="w-full max-w-sm relative z-10"
             >
-                {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="w-14 h-14 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center mx-auto mb-4">
                         <Shield className="w-7 h-7 text-blue-500" />
