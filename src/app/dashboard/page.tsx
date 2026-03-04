@@ -47,7 +47,7 @@ export default function StudentDashboard() {
                         .from('announcements')
                         .select('*')
                         .eq('is_active', true)
-                        .or(`target_class_id.is.null,target_class_id.eq.${user.class_id}`)
+                        .or(user?.class_id ? `target_class_id.is.null,target_class_id.eq.${user.class_id}` : 'target_class_id.is.null')
                         .order('created_at', { ascending: false })
                         .limit(5),
                     supabase
