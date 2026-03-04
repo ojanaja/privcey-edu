@@ -115,7 +115,7 @@ export function Sidebar() {
                                 'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all relative',
                                 isActive
                                     ? 'text-accent-1 bg-accent-1/10 font-medium'
-                                    : 'text-foreground/50 hover:text-foreground/80 hover:bg-foreground/[0.03]'
+                                    : 'text-foreground/50 hover:text-foreground/80 hover:bg-foreground/3'
                             )}
                         >
                             {isActive && (

@@ -207,7 +207,7 @@ export default function StudentDashboard() {
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 transition={{ delay: idx * 0.1 }}
-                                                className="flex items-center justify-between py-3 px-4 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]"
+                                                className="flex items-center justify-between py-3 px-4 rounded-xl bg-foreground/2 border border-foreground/4"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-lg">
@@ -273,7 +273,7 @@ export default function StudentDashboard() {
                                             <Link
                                                 key={tryout.id}
                                                 href={`/dashboard/tryout/${tryout.id}`}
-                                                className="block py-2.5 px-3 rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] hover:bg-foreground/[0.05] transition-all"
+                                                className="block py-2.5 px-3 rounded-lg bg-foreground/2 border border-foreground/4 hover:bg-foreground/5 transition-all"
                                             >
                                                 <p className="text-sm text-foreground font-medium">{tryout.title}</p>
                                                 <div className="flex items-center gap-2 mt-1">
@@ -307,7 +307,7 @@ export default function StudentDashboard() {
                                     </Link>
                                     <Link
                                         href="/dashboard/latsol"
-                                        className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-foreground/[0.02] border border-foreground/[0.04] hover:bg-foreground/[0.05] transition-all text-foreground/60 text-sm"
+                                        className="flex items-center gap-3 py-2.5 px-3 rounded-lg bg-foreground/2 border border-foreground/4 hover:bg-foreground/5 transition-all text-foreground/60 text-sm"
                                     >
                                         <BookOpen className="w-4 h-4" />
                                         {t.studentDashboard.dailyExercise}

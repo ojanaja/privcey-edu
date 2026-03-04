@@ -193,7 +193,7 @@ export default function LeaderboardPage() {
                                     transition={{ delay: idx * 0.03 }}
                                     className={cn(
                                         'flex items-center gap-4 py-3 px-4 rounded-xl',
-                                        isMe ? 'bg-accent-1/10 border border-accent-1/20' : 'bg-foreground/[0.01] border border-foreground/[0.03]'
+                                        isMe ? 'bg-accent-1/10 border border-accent-1/20' : 'bg-foreground/1 border border-foreground/3'
                                     )}
                                 >
                                     <span className={cn(
