@@ -134,6 +134,7 @@ export interface Translations {
         attendance: string;
         announcements: string;
         analytics: string;
+        classes: string;
         studentScores: string;
         logout: string;
         adminPanel: string;
@@ -189,6 +190,27 @@ export interface Translations {
         easy: string;
         medium: string;
         hard: string;
+    };
+
+    adminClasses: {
+        title: string;
+        subtitle: string;
+        studentsCapacity: string;
+        create: string;
+        newClass: string;
+        editClass: string;
+        nameLabel: string;
+        namePlaceholder: string;
+        descriptionLabel: string;
+        descriptionPlaceholder: string;
+        maxStudentsLabel: string;
+        tutorLabel: string;
+        noTutor: string;
+        full: string;
+        available: string;
+        noClasses: string;
+        confirmDelete: string;
+        cannotDeleteWithStudents: string;
     };
 
     adminAnnouncements: {
@@ -371,6 +393,18 @@ export interface Translations {
         questionOf: string;
         finishAndView: string;
         navigation: string;
+        reasonLabel: string;
+        reasonPlaceholder: string;
+        reasonRequired: string;
+        yourReason: string;
+        fullyAnswered: string;
+        needsReason: string;
+        checkAnswer: string;
+        answerCorrect: string;
+        answerWrong: string;
+        correctAnswerIs: string;
+        nextQuestion: string;
+        inProgress: string;
     };
 
     leaderboardPage: {
@@ -562,6 +596,40 @@ export interface Translations {
         incorrectTooltip: string;
         playAgain: string;
         backButton: string;
+    };
+
+    payment: {
+        title: string;
+        subtitle: string;
+        monthlyFee: string;
+        benefit1: string;
+        benefit2: string;
+        benefit3: string;
+        benefit4: string;
+        secureNote: string;
+        payWithQris: string;
+        generatingQris: string;
+        scanQris: string;
+        scanQrisDesc: string;
+        totalPayment: string;
+        remaining: string;
+        waitingPayment: string;
+        supportedApps: string;
+        payLater: string;
+        successTitle: string;
+        successDesc: string;
+        startLearning: string;
+        expiredTitle: string;
+        expiredDesc: string;
+        tryAgain: string;
+        errorTitle: string;
+        errorDesc: string;
+        backToDashboard: string;
+        alreadyActive: string;
+        alreadyActiveDesc: string;
+        dashboardBanner: string;
+        dashboardBannerDesc: string;
+        payNow: string;
     };
 
     ui: {
