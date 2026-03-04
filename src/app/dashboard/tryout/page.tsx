@@ -44,7 +44,6 @@ export default function TryOutListPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
         >
-            {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
@@ -57,7 +56,6 @@ export default function TryOutListPage() {
                 </div>
             </div>
 
-            {/* Filter tabs */}
             <div className="flex gap-2 mb-6">
                 {(['all', 'active', 'completed'] as const).map((f) => (
                     <button
@@ -73,7 +71,6 @@ export default function TryOutListPage() {
                 ))}
             </div>
 
-            {/* Try Out Grid */}
             {tryouts.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tryouts.map((tryout, idx) => (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExamStore } from '@/stores/exam-store';
 import { formatTimer, cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ import {
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 
 export function ExamInterface() {
@@ -43,10 +44,58 @@ export function ExamInterface() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { t } = useTranslation();
+    const router = useRouter();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const hasAutoSubmitted = useRef(false);
 
     const currentQuestion = questions[currentIndex];
     const currentAnswer = currentQuestion ? answers.get(currentQuestion.id) : null;
+
+    const handleSubmit = useCallback(async () => {
+        if (!attemptId || isSubmitting) return;
+        setIsSubmitting(true);
+
+        try {
+            const supabase = createClient();
+
+            const answerEntries = Array.from(answers.entries());
+            if (answerEntries.length > 0) {
+                const answerRows = answerEntries.map(([questionId, selectedAnswer]) => ({
+                    attempt_id: attemptId,
+                    question_id: questionId,
+                    selected_answer: selectedAnswer,
+                    answered_at: new Date().toISOString(),
+                }));
+
+                const { error: answerError } = await supabase
+                    .from('student_answers')
+                    .upsert(answerRows, { onConflict: 'attempt_id,question_id' });
+
+                if (answerError) {
+                    console.error('Failed to save answers (batch), falling back to individual:', answerError);
+                    for (const row of answerRows) {
+                        await supabase.from('student_answers').upsert(row, { onConflict: 'attempt_id,question_id' });
+                    }
+                }
+            }
+
+            const { error: submitError } = await supabase
+                .from('tryout_attempts')
+                .update({ is_submitted: true })
+                .eq('id', attemptId);
+
+            if (submitError) {
+                console.error('Failed to submit attempt:', submitError);
+            }
+
+            submitExam();
+        } catch (err) {
+            console.error('Submit failed:', err);
+        } finally {
+            setIsSubmitting(false);
+            setShowConfirm(false);
+        }
+    }, [attemptId, answers, isSubmitting, submitExam]);
 
     useEffect(() => {
         if (isStarted && !isSubmitted && timeRemaining > 0) {
@@ -56,51 +105,11 @@ export function ExamInterface() {
             };
         }
 
-        if (timeRemaining === 0 && isStarted && !isSubmitted) {
+        if (timeRemaining === 0 && isStarted && !isSubmitted && !hasAutoSubmitted.current) {
+            hasAutoSubmitted.current = true;
             handleSubmit();
         }
-    }, [isStarted, isSubmitted, timeRemaining]);
-
-    const handleSubmit = async () => {
-        if (!attemptId) return;
-        setIsSubmitting(true);
-
-        const supabase = createClient();
-
-        const answerEntries = Array.from(answers.entries());
-        if (answerEntries.length > 0) {
-            const answerRows = answerEntries.map(([questionId, selectedAnswer]) => ({
-                attempt_id: attemptId,
-                question_id: questionId,
-                selected_answer: selectedAnswer,
-                answered_at: new Date().toISOString(),
-            }));
-
-            const { error: answerError } = await supabase
-                .from('student_answers')
-                .upsert(answerRows, { onConflict: 'attempt_id,question_id' });
-
-            if (answerError) {
-                console.error('Failed to save answers:', answerError);
-                for (const row of answerRows) {
-                    await supabase.from('student_answers').insert(row);
-                }
-            }
-        }
-
-        const { error: submitError } = await supabase
-            .from('tryout_attempts')
-            .update({ is_submitted: true })
-            .eq('id', attemptId);
-
-        if (submitError) {
-            console.error('Failed to submit attempt:', submitError);
-        }
-
-        submitExam();
-        setIsSubmitting(false);
-        setShowConfirm(false);
-    };
+    }, [isStarted, isSubmitted, timeRemaining, handleSubmit, tick]);
 
     if (!isStarted) {
         return (
@@ -139,7 +148,7 @@ export function ExamInterface() {
                         <span>{t.exam.answeredCount} {answers.size}</span>
                         <span>{t.exam.emptyCount} {questions.length - answers.size}</span>
                     </div>
-                    <Button onClick={() => window.location.href = '/dashboard/tryout'} className="w-full">
+                    <Button onClick={() => router.push('/dashboard/tryout')} className="w-full">
                         {t.exam.backToTryoutList}
                     </Button>
                 </GlassCard>

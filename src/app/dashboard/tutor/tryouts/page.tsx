@@ -139,7 +139,6 @@ export default function TutorTryoutsPage() {
                 </Button>
             </div>
 
-            {/* Create TryOut Form */}
             {showForm && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-6">
                     <div className="admin-card p-6">
@@ -176,7 +175,6 @@ export default function TutorTryoutsPage() {
                 </motion.div>
             )}
 
-            {/* Tryout List */}
             <div className="space-y-3 mb-6">
                 {tryouts.map((tryout) => (
                     <div
@@ -203,7 +201,6 @@ export default function TutorTryoutsPage() {
                 ))}
             </div>
 
-            {/* Questions for selected tryout */}
             {selectedTryout && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <div className="flex items-center justify-between mb-4">

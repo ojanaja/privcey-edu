@@ -157,7 +157,6 @@ function QuestionCard({
             transition={{ duration: 0.3 }}
             className="w-full max-w-3xl mx-auto"
         >
-            {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <Badge variant="info">
@@ -182,10 +181,8 @@ function QuestionCard({
                 </div>
             </div>
 
-            {/* Timer Bar */}
             <TimerBar timeRemaining={timeRemaining} timeTotal={timePerQuestion} />
 
-            {/* Question */}
             <GlassCard hoverable={false} padding="lg" className="mt-4 mb-6">
                 <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-accent-1/20 flex items-center justify-center shrink-0">
@@ -197,7 +194,6 @@ function QuestionCard({
                 </div>
                 {question.question_image_url && (
                     <div className="mt-4 rounded-xl overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={question.question_image_url}
                             alt="Question"
@@ -207,7 +203,6 @@ function QuestionCard({
                 )}
             </GlassCard>
 
-            {/* Options Grid */}
             <div className={cn(
                 "grid gap-3",
                 options.length <= 4 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2"
@@ -408,7 +403,6 @@ function ResultsScreen({ onPlayAgain, onExit }: { onPlayAgain: () => void; onExi
             animate={{ opacity: 1 }}
             className="max-w-2xl mx-auto"
         >
-            {/* Celebration Header */}
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -427,7 +421,6 @@ function ResultsScreen({ onPlayAgain, onExit }: { onPlayAgain: () => void; onExi
                 <p className="text-foreground/40 text-sm">{moduleTitle}</p>
             </motion.div>
 
-            {/* Score */}
             <GlassCard hoverable={false} padding="lg" className="text-center mb-6">
                 <motion.div
                     initial={{ scale: 0 }}
@@ -439,7 +432,6 @@ function ResultsScreen({ onPlayAgain, onExit }: { onPlayAgain: () => void; onExi
                 </motion.div>
             </GlassCard>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 {[
                     { icon: Target, label: t.quizGame.accuracy, value: `${accuracy}%`, color: 'text-blue-400', bg: 'bg-blue-500/10' },
@@ -464,7 +456,6 @@ function ResultsScreen({ onPlayAgain, onExit }: { onPlayAgain: () => void; onExi
                 ))}
             </div>
 
-            {/* Question Review */}
             <GlassCard hoverable={false} padding="md" className="mb-6">
                 <h3 className="text-sm font-semibold text-foreground/60 mb-3 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
@@ -493,7 +484,6 @@ function ResultsScreen({ onPlayAgain, onExit }: { onPlayAgain: () => void; onExi
                 </div>
             </GlassCard>
 
-            {/* Actions */}
             <div className="flex items-center gap-3">
                 <Button onClick={onPlayAgain} variant="primary" size="lg" className="flex-1">
                     <RotateCcw className="w-4 h-4" />

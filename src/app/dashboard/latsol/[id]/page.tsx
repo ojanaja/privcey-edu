@@ -11,6 +11,7 @@ import {
     CheckCircle2,
     XCircle,
     ArrowLeft,
+    Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -41,7 +42,10 @@ export default function LatsolExercisePage({
     const [isLoading, setIsLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState<Map<string, string>>(new Map());
-    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [reasons, setReasons] = useState<Map<string, string>>(new Map());
+    const [checkedQuestions, setCheckedQuestions] = useState<Set<string>>(new Set());
+    const [isFinished, setIsFinished] = useState(false);
+    const [showReasonWarning, setShowReasonWarning] = useState(false);
 
     useEffect(() => {
         params.then((p) => setExerciseId(p.id));
@@ -75,9 +79,15 @@ export default function LatsolExercisePage({
 
     const currentQuestion = questions[currentIndex];
     const currentAnswer = currentQuestion ? answers.get(currentQuestion.id) : null;
+    const currentReason = currentQuestion ? reasons.get(currentQuestion.id) : '';
+    const isCurrentChecked = currentQuestion ? checkedQuestions.has(currentQuestion.id) : false;
+    const isCurrentCorrect = currentQuestion ? answers.get(currentQuestion.id) === currentQuestion.correct_answer : false;
+    const isLastQuestion = currentIndex === questions.length - 1;
+    const allChecked = questions.length > 0 && questions.every((q) => checkedQuestions.has(q.id));
 
     const handleSelect = (questionId: string, answer: string) => {
-        if (isSubmitted) return;
+        if (checkedQuestions.has(questionId)) return;
+        setShowReasonWarning(false);
         setAnswers((prev) => {
             const newMap = new Map(prev);
             newMap.set(questionId, answer);
@@ -85,8 +95,42 @@ export default function LatsolExercisePage({
         });
     };
 
-    const handleSubmit = async () => {
-        setIsSubmitted(true);
+    const handleReasonChange = (questionId: string, reason: string) => {
+        if (checkedQuestions.has(questionId)) return;
+        setShowReasonWarning(false);
+        setReasons((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(questionId, reason);
+            return newMap;
+        });
+    };
+
+    const isFullyAnswered = (questionId: string) => {
+        return answers.has(questionId) && (reasons.get(questionId) || '').trim().length > 0;
+    };
+
+    const handleCheckAnswer = () => {
+        if (!currentQuestion) return;
+        if (!isFullyAnswered(currentQuestion.id)) {
+            setShowReasonWarning(true);
+            return;
+        }
+        setCheckedQuestions((prev) => {
+            const newSet = new Set(prev);
+            newSet.add(currentQuestion.id);
+            return newSet;
+        });
+    };
+
+    const handleNextQuestion = () => {
+        if (currentIndex < questions.length - 1) {
+            setShowReasonWarning(false);
+            setCurrentIndex(currentIndex + 1);
+        }
+    };
+
+    const handleFinish = async () => {
+        setIsFinished(true);
 
         if (user && exerciseId) {
             const supabase = createClient();
@@ -125,7 +169,7 @@ export default function LatsolExercisePage({
         );
     }
 
-    if (isSubmitted) {
+    if (isFinished) {
         return (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="max-w-2xl mx-auto">
@@ -155,7 +199,7 @@ export default function LatsolExercisePage({
                                     <div className="flex items-start gap-3 mb-3">
                                         <span
                                             className={cn(
-                                                'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0',
+                                                'w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0',
                                                 isCorrect
                                                     ? 'bg-green-500/20 text-green-400'
                                                     : 'bg-red-500/20 text-red-400'
@@ -193,6 +237,12 @@ export default function LatsolExercisePage({
                                             );
                                         })}
                                     </div>
+                                    {reasons.get(q.id) && (
+                                        <div className="mt-3 ml-10 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                            <p className="text-xs text-blue-400 font-medium mb-1">{t.latsol.yourReason}</p>
+                                            <p className="text-xs text-foreground/60 whitespace-pre-wrap">{reasons.get(q.id)}</p>
+                                        </div>
+                                    )}
                                     {q.explanation && (
                                         <div className="mt-3 ml-10 p-3 rounded-lg bg-accent-1/10 border border-accent-1/20">
                                             <p className="text-xs text-accent-1 font-medium mb-1">{t.latsol.discussionLabel}</p>
@@ -227,9 +277,12 @@ export default function LatsolExercisePage({
                         {t.latsol.questionOf} {currentIndex + 1} / {questions.length}
                     </p>
                 </div>
-                <Button variant="danger" size="sm" onClick={handleSubmit}>
-                    {t.latsol.finishAndView}
-                </Button>
+                {allChecked && (
+                    <Button variant="danger" size="sm" onClick={handleFinish}>
+                        <Send className="w-3.5 h-3.5" />
+                        {t.latsol.finishAndView}
+                    </Button>
+                )}
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6">
@@ -244,7 +297,14 @@ export default function LatsolExercisePage({
                         >
                             <GlassCard hoverable={false} padding="lg">
                                 <div className="flex items-start gap-3 mb-6">
-                                    <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-1/20 text-accent-1 flex items-center justify-center text-sm font-bold">
+                                    <span className={cn(
+                                        'shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold',
+                                        isCurrentChecked
+                                            ? isCurrentCorrect
+                                                ? 'bg-green-500/20 text-green-400'
+                                                : 'bg-red-500/20 text-red-400'
+                                            : 'bg-accent-1/20 text-accent-1'
+                                    )}>
                                         {currentIndex + 1}
                                     </span>
                                     <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
@@ -258,6 +318,46 @@ export default function LatsolExercisePage({
                                         const text = currentQuestion?.[key] as string | null;
                                         if (!text) return null;
                                         const isSelected = currentAnswer === opt;
+                                        const isCorrectOpt = currentQuestion?.correct_answer === opt;
+
+                                        if (isCurrentChecked) {
+                                            return (
+                                                <div
+                                                    key={opt}
+                                                    className={cn(
+                                                        'w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left',
+                                                        isCorrectOpt
+                                                            ? 'bg-green-500/10 border-green-500/30'
+                                                            : isSelected && !isCorrectOpt
+                                                                ? 'bg-red-500/10 border-red-500/30'
+                                                                : 'bg-foreground/[0.02] border-foreground/[0.06]'
+                                                    )}
+                                                >
+                                                    <span
+                                                        className={cn(
+                                                            'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0',
+                                                            isCorrectOpt
+                                                                ? 'bg-green-500/20 text-green-400'
+                                                                : isSelected && !isCorrectOpt
+                                                                    ? 'bg-red-500/20 text-red-400'
+                                                                    : 'bg-foreground/5 text-foreground/40'
+                                                        )}
+                                                    >
+                                                        {opt}
+                                                    </span>
+                                                    <span className={cn(
+                                                        'text-sm flex-1',
+                                                        isCorrectOpt
+                                                            ? 'text-green-300'
+                                                            : isSelected && !isCorrectOpt
+                                                                ? 'text-red-300'
+                                                                : 'text-foreground/40'
+                                                    )}>{text}</span>
+                                                    {isCorrectOpt && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+                                                    {isSelected && !isCorrectOpt && <XCircle className="w-4 h-4 text-red-400" />}
+                                                </div>
+                                            );
+                                        }
 
                                         return (
                                             <motion.button
@@ -275,7 +375,7 @@ export default function LatsolExercisePage({
                                             >
                                                 <span
                                                     className={cn(
-                                                        'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0',
+                                                        'w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shrink-0',
                                                         isSelected
                                                             ? 'bg-accent-1 text-white'
                                                             : 'bg-foreground/5 text-foreground/40'
@@ -289,52 +389,142 @@ export default function LatsolExercisePage({
                                     })}
                                 </div>
 
+                                {currentAnswer && (
+                                    <div className="mt-4">
+                                        <label className="text-sm font-medium text-foreground/70 mb-2 block">
+                                            {t.latsol.reasonLabel} <span className="text-red-400">*</span>
+                                        </label>
+                                        <textarea
+                                            value={currentReason || ''}
+                                            onChange={(e) =>
+                                                currentQuestion && handleReasonChange(currentQuestion.id, e.target.value)
+                                            }
+                                            placeholder={t.latsol.reasonPlaceholder}
+                                            rows={3}
+                                            readOnly={isCurrentChecked}
+                                            className={cn(
+                                                'w-full rounded-xl border px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none resize-none transition-all',
+                                                isCurrentChecked
+                                                    ? 'bg-foreground/[0.04] border-foreground/[0.08] cursor-not-allowed opacity-70'
+                                                    : 'bg-foreground/[0.02] focus:ring-2 focus:ring-accent-1/50',
+                                                showReasonWarning && !isCurrentChecked && !(currentReason || '').trim()
+                                                    ? 'border-red-500/50 ring-2 ring-red-500/20'
+                                                    : !isCurrentChecked ? 'border-foreground/[0.06]' : ''
+                                            )}
+                                        />
+                                        {showReasonWarning && !isCurrentChecked && !(currentReason || '').trim() && (
+                                            <p className="text-xs text-red-400 mt-1">{t.latsol.reasonRequired}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {isCurrentChecked && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="mt-4"
+                                    >
+                                        {isCurrentCorrect ? (
+                                            <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                                                    <p className="text-sm font-semibold text-green-400">{t.latsol.answerCorrect}</p>
+                                                </div>
+                                                {currentQuestion?.explanation && (
+                                                    <p className="text-xs text-foreground/60 mt-2">{currentQuestion.explanation}</p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <XCircle className="w-5 h-5 text-red-400" />
+                                                    <p className="text-sm font-semibold text-red-400">{t.latsol.answerWrong}</p>
+                                                </div>
+                                                <p className="text-xs text-foreground/50 mt-1">
+                                                    {t.latsol.correctAnswerIs}{' '}
+                                                    <span className="font-bold text-green-400">{currentQuestion?.correct_answer}</span>
+                                                </p>
+                                                {currentQuestion?.explanation && (
+                                                    <div className="mt-3 pt-3 border-t border-red-500/10">
+                                                        <p className="text-xs text-accent-1 font-medium mb-1">{t.latsol.discussionLabel}</p>
+                                                        <p className="text-xs text-foreground/60">{currentQuestion.explanation}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+
                                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-foreground/5">
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                                        onClick={() => {
+                                            setShowReasonWarning(false);
+                                            setCurrentIndex(Math.max(0, currentIndex - 1));
+                                        }}
                                         disabled={currentIndex === 0}
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         {t.common.previous}
                                     </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            setCurrentIndex(Math.min(currentIndex + 1, questions.length - 1))
-                                        }
-                                        disabled={currentIndex === questions.length - 1}
-                                    >
-                                        {t.common.next}
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
+
+                                    {!isCurrentChecked ? (
+                                        <Button
+                                            size="sm"
+                                            onClick={handleCheckAnswer}
+                                            disabled={!currentAnswer}
+                                        >
+                                            <Send className="w-3.5 h-3.5" />
+                                            {t.latsol.checkAnswer}
+                                        </Button>
+                                    ) : isLastQuestion ? (
+                                        <Button size="sm" onClick={handleFinish}>
+                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            {t.latsol.finishAndView}
+                                        </Button>
+                                    ) : (
+                                        <Button size="sm" onClick={handleNextQuestion}>
+                                            {t.latsol.nextQuestion}
+                                            <ChevronRight className="w-3.5 h-3.5" />
+                                        </Button>
+                                    )}
                                 </div>
                             </GlassCard>
                         </motion.div>
                     </AnimatePresence>
                 </div>
 
-                <div className="lg:w-56 flex-shrink-0">
+                <div className="lg:w-56 shrink-0">
                     <GlassCard hoverable={false} padding="md" className="lg:sticky lg:top-6">
                         <h3 className="text-sm font-medium text-foreground/60 mb-3">{t.latsol.navigation}</h3>
                         <div className="grid grid-cols-5 gap-2">
                             {questions.map((q, idx) => {
-                                const isAnswered = answers.has(q.id);
                                 const isCurrent = idx === currentIndex;
+                                const isChecked = checkedQuestions.has(q.id);
+                                const isCorrect = answers.get(q.id) === q.correct_answer;
+                                const hasAnswer = answers.has(q.id);
 
                                 return (
                                     <button
                                         key={q.id}
-                                        onClick={() => setCurrentIndex(idx)}
+                                        onClick={() => {
+                                            setShowReasonWarning(false);
+                                            setCurrentIndex(idx);
+                                        }}
                                         className={cn(
                                             'w-9 h-9 rounded-lg text-xs font-medium transition-all',
-                                            isCurrent
-                                                ? 'bg-accent-1 text-foreground ring-2 ring-accent-1/50'
-                                                : isAnswered
-                                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                                    : 'bg-foreground/5 text-foreground/40 border border-foreground/[0.06] hover:bg-foreground/10'
+                                            isCurrent && 'ring-2 ring-accent-1/50',
+                                            isChecked && isCorrect
+                                                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                                : isChecked && !isCorrect
+                                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                                    : isCurrent
+                                                        ? 'bg-accent-1 text-foreground'
+                                                        : hasAnswer
+                                                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                                            : 'bg-foreground/5 text-foreground/40 border border-foreground/[0.06] hover:bg-foreground/10'
                                         )}
                                     >
                                         {idx + 1}
@@ -345,11 +535,19 @@ export default function LatsolExercisePage({
                         <div className="mt-3 pt-3 border-t border-foreground/5 space-y-1 text-[10px] text-foreground/40">
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded bg-green-500/20 border border-green-500/30" />
-                                {t.common.answered} ({answers.size})
+                                {t.common.correct} ({questions.filter((q) => checkedQuestions.has(q.id) && answers.get(q.id) === q.correct_answer).length})
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded bg-red-500/20 border border-red-500/30" />
+                                {t.common.incorrect} ({questions.filter((q) => checkedQuestions.has(q.id) && answers.get(q.id) !== q.correct_answer).length})
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded bg-yellow-500/20 border border-yellow-500/30" />
+                                {t.latsol.inProgress} ({questions.filter((q) => answers.has(q.id) && !checkedQuestions.has(q.id)).length})
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded bg-foreground/5 border border-foreground/[0.06]" />
-                                {t.common.notYet} ({questions.length - answers.size})
+                                {t.common.notYet} ({questions.filter((q) => !answers.has(q.id)).length})
                             </div>
                         </div>
                     </GlassCard>

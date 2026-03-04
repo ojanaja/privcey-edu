@@ -82,12 +82,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    await supabase.from('score_history').insert({
-        student_id: user.id,
-        tryout_id: attempt.tryout_id,
-        attempt_id,
-        score,
-    });
 
     await supabase.from('attendance_logs').insert({
         student_id: user.id,

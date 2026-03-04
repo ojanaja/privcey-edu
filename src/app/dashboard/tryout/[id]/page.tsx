@@ -54,13 +54,13 @@ export default function TryOutDetailPage() {
                 setPreviousAttempt(attemptData[0]);
             }
 
-            const { data: questionData } = await supabase
-                .from('questions')
-                .select('*')
-                .eq('tryout_id', tryoutId)
-                .order('order_number', { ascending: true });
-
-            if (questionData) setQuestions(questionData);
+            try {
+                const res = await fetch(`/api/questions?tryout_id=${tryoutId}`);
+                const json = await res.json();
+                if (json.questions) setQuestions(json.questions);
+            } catch (err) {
+                console.error('Failed to fetch questions:', err);
+            }
 
             setIsLoading(false);
         };
