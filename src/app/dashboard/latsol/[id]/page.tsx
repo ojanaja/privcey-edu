@@ -133,12 +133,14 @@ export default function LatsolExercisePage({
         setIsFinished(true);
 
         if (user && exerciseId) {
-            const supabase = createClient();
-            await supabase.from('attendance_logs').insert({
-                student_id: user.id,
-                activity_type: 'tryout',
-                activity_id: exerciseId,
-                activity_title: `Latsol: ${exerciseTitle}`,
+            await fetch('/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    activity_type: 'tryout',
+                    activity_id: exerciseId,
+                    activity_title: `Latsol: ${exerciseTitle}`,
+                }),
             });
         }
     };
@@ -330,7 +332,7 @@ export default function LatsolExercisePage({
                                                             ? 'bg-green-500/10 border-green-500/30'
                                                             : isSelected && !isCorrectOpt
                                                                 ? 'bg-red-500/10 border-red-500/30'
-                                                                : 'bg-foreground/[0.02] border-foreground/[0.06]'
+                                                                : 'bg-foreground/2 border-foreground/6'
                                                     )}
                                                 >
                                                     <span
@@ -369,7 +371,7 @@ export default function LatsolExercisePage({
                                                     'w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all',
                                                     isSelected
                                                         ? 'bg-accent-1/20 border-accent-1/50 text-white'
-                                                        : 'bg-foreground/[0.02] border-foreground/[0.06] text-foreground/70 hover:bg-foreground/[0.05] hover:border-foreground/[0.1]'
+                                                        : 'bg-foreground/2 border-foreground/6 text-foreground/70 hover:bg-foreground/5 hover:border-foreground/10'
                                                 )}
                                                 whileTap={{ scale: 0.98 }}
                                             >
@@ -405,11 +407,11 @@ export default function LatsolExercisePage({
                                             className={cn(
                                                 'w-full rounded-xl border px-4 py-3 text-sm text-foreground placeholder:text-foreground/30 focus:outline-none resize-none transition-all',
                                                 isCurrentChecked
-                                                    ? 'bg-foreground/[0.04] border-foreground/[0.08] cursor-not-allowed opacity-70'
-                                                    : 'bg-foreground/[0.02] focus:ring-2 focus:ring-accent-1/50',
+                                                    ? 'bg-foreground/4 border-foreground/8 cursor-not-allowed opacity-70'
+                                                    : 'bg-foreground/2 focus:ring-2 focus:ring-accent-1/50',
                                                 showReasonWarning && !isCurrentChecked && !(currentReason || '').trim()
                                                     ? 'border-red-500/50 ring-2 ring-red-500/20'
-                                                    : !isCurrentChecked ? 'border-foreground/[0.06]' : ''
+                                                    : !isCurrentChecked ? 'border-foreground/6' : ''
                                             )}
                                         />
                                         {showReasonWarning && !isCurrentChecked && !(currentReason || '').trim() && (
@@ -524,7 +526,7 @@ export default function LatsolExercisePage({
                                                         ? 'bg-accent-1 text-foreground'
                                                         : hasAnswer
                                                             ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                                            : 'bg-foreground/5 text-foreground/40 border border-foreground/[0.06] hover:bg-foreground/10'
+                                                            : 'bg-foreground/5 text-foreground/40 border border-foreground/6 hover:bg-foreground/10'
                                         )}
                                     >
                                         {idx + 1}
@@ -546,7 +548,7 @@ export default function LatsolExercisePage({
                                 {t.latsol.inProgress} ({questions.filter((q) => answers.has(q.id) && !checkedQuestions.has(q.id)).length})
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded bg-foreground/5 border border-foreground/[0.06]" />
+                                <span className="w-2.5 h-2.5 rounded bg-foreground/5 border border-foreground/6" />
                                 {t.common.notYet} ({questions.filter((q) => !answers.has(q.id)).length})
                             </div>
                         </div>

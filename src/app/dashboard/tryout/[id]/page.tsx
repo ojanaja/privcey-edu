@@ -88,11 +88,14 @@ export default function TryOutDetailPage() {
             return;
         }
 
-        await supabase.from('attendance_logs').insert({
-            student_id: user.id,
-            activity_type: 'tryout',
-            activity_id: tryoutId,
-            activity_title: tryout.title,
+        await fetch('/api/attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                activity_type: 'tryout',
+                activity_id: tryoutId,
+                activity_title: tryout.title,
+            }),
         });
 
         setExam(tryoutId, attempt.id, questions, tryout.duration_minutes * 60);
@@ -151,22 +154,22 @@ export default function TryOutDetailPage() {
                         )}
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="text-center p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                            <div className="text-center p-3 rounded-xl bg-foreground/2 border border-foreground/4">
                                 <Clock className="w-5 h-5 text-accent-1 mx-auto mb-1" />
                                 <p className="text-sm font-medium text-foreground">{tryout.duration_minutes} {t.common.minutes}</p>
                                 <p className="text-[10px] text-foreground/30">{t.tryoutDetail.durationLabel}</p>
                             </div>
-                            <div className="text-center p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                            <div className="text-center p-3 rounded-xl bg-foreground/2 border border-foreground/4">
                                 <Target className="w-5 h-5 text-accent-1 mx-auto mb-1" />
                                 <p className="text-sm font-medium text-foreground">{tryout.passing_grade}</p>
                                 <p className="text-[10px] text-foreground/30">{t.tryoutDetail.passingGrade}</p>
                             </div>
-                            <div className="text-center p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                            <div className="text-center p-3 rounded-xl bg-foreground/2 border border-foreground/4">
                                 <FileText className="w-5 h-5 text-accent-1 mx-auto mb-1" />
                                 <p className="text-sm font-medium text-foreground">{questions.length}</p>
                                 <p className="text-[10px] text-foreground/30">{t.tryoutDetail.totalQuestions}</p>
                             </div>
-                            <div className="text-center p-3 rounded-xl bg-foreground/[0.02] border border-foreground/[0.04]">
+                            <div className="text-center p-3 rounded-xl bg-foreground/2 border border-foreground/4">
                                 <CheckCircle2 className="w-5 h-5 text-accent-1 mx-auto mb-1" />
                                 <p className="text-sm font-medium text-foreground">
                                     {previousAttempt ? t.tryoutDetail.done : t.tryoutDetail.notDone}

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/auth-store';
-import { createClient } from '@/lib/supabase/client';
 import { GlassCard, Badge } from '@/components/ui';
 import { Video, Play, Clock, Search } from 'lucide-react';
 import Image from 'next/image';
@@ -21,12 +20,14 @@ export function VodClientPage({ initialVods }: { initialVods: VodContent[] }) {
         setSelectedVod(vod);
 
         if (user) {
-            const supabase = createClient();
-            await supabase.from('attendance_logs').insert({
-                student_id: user.id,
-                activity_type: 'vod_watch',
-                activity_id: vod.id,
-                activity_title: vod.title,
+            await fetch('/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    activity_type: 'vod_watch',
+                    activity_id: vod.id,
+                    activity_title: vod.title,
+                }),
             });
         }
     };

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/auth-store';
-import { createClient } from '@/lib/supabase/client';
 import { GlassCard, Badge, Button } from '@/components/ui';
 import { BookOpen, ExternalLink, FileText, Search } from 'lucide-react';
 import type { EmodContent } from '@/types/database';
@@ -17,12 +16,14 @@ export function EmodClientPage({ initialEmods }: { initialEmods: EmodContent[] }
 
     const handleOpenEmod = async (emod: EmodContent) => {
         if (user) {
-            const supabase = createClient();
-            await supabase.from('attendance_logs').insert({
-                student_id: user.id,
-                activity_type: 'emod_access',
-                activity_id: emod.id,
-                activity_title: emod.title,
+            await fetch('/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    activity_type: 'emod_access',
+                    activity_id: emod.id,
+                    activity_title: emod.title,
+                }),
             });
         }
         window.open(emod.drive_url, '_blank');
