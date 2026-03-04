@@ -21,32 +21,56 @@ import {
     AreaChart,
 } from 'recharts';
 
+const PAGE_SIZE = 20;
+
 export default function ScoresPage() {
     const { user } = useAuthStore();
     const { t } = useTranslation();
     const [attempts, setAttempts] = useState<TryOutAttempt[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
 
     useEffect(() => {
         if (!user) return;
         const supabase = createClient();
 
         const fetchScores = async () => {
-            const { data } = await supabase
-                .from('tryout_attempts')
-                .select('*, tryout:tryouts(*, subject:subjects(*))')
-                .eq('student_id', user.id)
-                .eq('is_submitted', true)
-                .order('finished_at', { ascending: true });
+            try {
+                const { data, error: fetchError, count } = await supabase
+                    .from('tryout_attempts')
+                    .select('*, tryout:tryouts(*, subject:subjects(*))', { count: 'exact' })
+                    .eq('student_id', user.id)
+                    .eq('is_submitted', true)
+                    .order('finished_at', { ascending: false })
+                    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-            if (data) setAttempts(data);
-            setIsLoading(false);
+                if (fetchError) throw fetchError;
+                if (data) setAttempts(data);
+                if (count !== null) setTotalCount(count);
+            } catch (err) {
+                console.error('[Scores] Failed to fetch:', err);
+                setError('Gagal memuat data skor. Silakan refresh halaman.');
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         fetchScores();
-    }, [user]);
+    }, [user, page]);
 
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
+
+    if (error) {
+        return (
+            <div className="min-h-[40vh] flex items-center justify-center">
+                <div className="text-center p-6 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <p className="text-red-400 text-sm">{error}</p>
+                </div>
+            </div>
+        );
+    }
 
     const scores = attempts.map((a) => a.score || 0);
     const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
@@ -71,7 +95,6 @@ export default function ScoresPage() {
                 {t.scoresPage.title}
             </h1>
 
-            {/* Score Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <GlassCard hoverable={false} padding="md" className="text-center">
                     <ScoreRing score={avgScore} size={100} strokeWidth={6} />
@@ -100,7 +123,6 @@ export default function ScoresPage() {
                 </GlassCard>
             </div>
 
-            {/* Score Chart */}
             {chartData.length > 1 && (
                 <GlassCard hoverable={false} padding="md" className="mb-8">
                     <h2 className="text-lg font-semibold text-foreground mb-4">{t.scoresPage.trendline}</h2>
@@ -144,7 +166,6 @@ export default function ScoresPage() {
                 </GlassCard>
             )}
 
-            {/* Score History Table */}
             <GlassCard hoverable={false} padding="md">
                 <h2 className="text-lg font-semibold text-foreground mb-4">{t.scoresPage.scoreHistory}</h2>
                 {attempts.length > 0 ? (
@@ -196,6 +217,30 @@ export default function ScoresPage() {
                     <div className="text-center py-12 text-foreground/30">
                         <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40" />
                         <p className="text-sm">{t.scoresPage.noHistory}</p>
+                    </div>
+                )}
+
+                {totalCount > PAGE_SIZE && (
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-foreground/5">
+                        <p className="text-xs text-foreground/40">
+                            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} dari {totalCount}
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="px-3 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+                            >
+                                ← Prev
+                            </button>
+                            <button
+                                onClick={() => setPage((p) => p + 1)}
+                                disabled={(page + 1) * PAGE_SIZE >= totalCount}
+                                className="px-3 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+                            >
+                                Next →
+                            </button>
+                        </div>
                     </div>
                 )}
             </GlassCard>
