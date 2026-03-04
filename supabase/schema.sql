@@ -355,8 +355,10 @@ CREATE POLICY "Students see own scores" ON score_history
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'tutor'))
   );
 
-CREATE POLICY "System can insert scores" ON score_history
-  FOR INSERT WITH CHECK (student_id = auth.uid());
+-- Only the auto_grade_attempt trigger (SECURITY DEFINER) can insert scores.
+-- No direct client-side INSERT is allowed.
+CREATE POLICY "Only system can insert scores" ON score_history
+  FOR INSERT WITH CHECK (false);
 
 -- =========================
 -- FUNCTIONS & TRIGGERS
@@ -375,7 +377,7 @@ BEGIN
       NEW.raw_user_meta_data->>'name',
       NEW.email
     ),
-    COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'student'),
+    'student',  -- ALWAYS default to student; admin/tutor set via admin API only
     NEW.raw_user_meta_data->>'avatar_url'
   );
   RETURN NEW;
