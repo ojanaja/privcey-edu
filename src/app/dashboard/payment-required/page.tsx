@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { GlassCard, Button } from '@/components/ui';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, QrCode, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 
@@ -25,14 +25,20 @@ export default function PaymentRequiredPage() {
                         {t.paymentRequired.description}
                     </p>
                     <div className="space-y-3">
+                        <Link href="/dashboard/payment">
+                            <Button className="w-full" size="lg">
+                                <QrCode className="w-5 h-5" />
+                                {t.payment.payWithQris}
+                                <ArrowRight className="w-4 h-4" />
+                            </Button>
+                        </Link>
                         <a
                             href={`https://wa.me/62XXXXXXXXXX?text=${encodeURIComponent(t.paymentRequired.whatsappMessage)}`}
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <Button className="w-full" size="lg">
+                            <Button variant="ghost" className="w-full mt-2">
                                 {t.paymentRequired.contactAdmin}
-                                <ArrowRight className="w-4 h-4" />
                             </Button>
                         </a>
                         <Link href="/dashboard">
