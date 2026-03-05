@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { Badge, LoadingSpinner } from '@/components/ui';
-import { Calendar, Search, Video, BookOpen, FileText, Clock } from 'lucide-react';
+import { Calendar, Search, Video, BookOpen, FileText, Clock, Download } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 
@@ -20,7 +20,7 @@ export default function TutorAttendancePage() {
         const fetchLogs = async () => {
             const { data } = await supabase
                 .from('attendance_logs')
-                .select('*, student:profiles(full_name)')
+                .select('*, student:profiles(full_name, email)')
                 .order('timestamp', { ascending: false })
                 .limit(100);
 
@@ -36,6 +36,25 @@ export default function TutorAttendancePage() {
         live_class: { label: 'Live Class', icon: <Clock className="w-3.5 h-3.5" /> },
         tryout: { label: 'Try Out', icon: <FileText className="w-3.5 h-3.5" /> },
         emod_access: { label: 'E-Modul', icon: <BookOpen className="w-3.5 h-3.5" /> },
+    };
+
+    const exportCSV = () => {
+        const headers = [t.adminAttendance.csvHeaders.studentName, t.adminAttendance.csvHeaders.email, t.adminAttendance.csvHeaders.activity, t.adminAttendance.csvHeaders.title, t.adminAttendance.csvHeaders.time];
+        const rows = filtered.map((log) => [
+            log.student?.full_name || '-',
+            log.student?.email || '-',
+            activityLabels[log.activity_type]?.label || log.activity_type,
+            log.activity_title || '-',
+            formatDateTime(log.timestamp),
+        ]);
+
+        const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kehadiran-tutor-${formatDateTime(new Date().toISOString())}.csv`;
+        a.click();
     };
 
     const filtered = logs.filter(
@@ -56,15 +75,24 @@ export default function TutorAttendancePage() {
                 <p className="text-foreground/40 text-sm mt-1">{t.tutorAttendance.subtitle}</p>
             </div>
 
-            <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
-                <input
-                    type="text"
-                    placeholder={t.tutorAttendance.searchPlaceholder}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="admin-input w-full pl-10 pr-4 py-2 text-sm max-w-md"
-                />
+            <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="relative w-full md:max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30" />
+                    <input
+                        type="text"
+                        placeholder={t.tutorAttendance.searchPlaceholder}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="admin-input w-full pl-10 pr-4 py-2 text-sm"
+                    />
+                </div>
+                <button
+                    onClick={exportCSV}
+                    className="admin-button-secondary w-full md:w-auto px-4 py-2 flex items-center justify-center gap-2"
+                >
+                    <Download className="w-4 h-4" />
+                    {t.common.exportCsv}
+                </button>
             </div>
 
             <div className="admin-card overflow-hidden">

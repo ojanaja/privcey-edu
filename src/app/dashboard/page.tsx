@@ -32,6 +32,7 @@ export default function StudentDashboard() {
         avgScore: 0,
         bestScore: 0,
         totalSubjects: 0,
+        streak: 0,
     });
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,13 +41,51 @@ export default function StudentDashboard() {
         if (!user) return;
         const supabase = createClient();
 
+        const updateStreak = async () => {
+            const today = new Date().toISOString().split('T')[0];
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('streak_count, last_activity_at')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile) return 0;
+
+            const lastActivity = profile.last_activity_at ? new Date(profile.last_activity_at).toISOString().split('T')[0] : null;
+            let newStreak = profile.streak_count || 0;
+
+            if (lastActivity === today) {
+                return newStreak;
+            }
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (lastActivity === yesterdayStr) {
+                newStreak += 1;
+            } else {
+                newStreak = 1;
+            }
+
+            await supabase.from('profiles').update({
+                streak_count: newStreak,
+                last_activity_at: new Date().toISOString()
+            }).eq('id', user.id);
+
+            return newStreak;
+        };
+
         const fetchData = async () => {
             try {
-                const [announcementRes, attemptRes, tryoutRes, allAttemptsRes, subjectRes] = await Promise.all([
+                const [streakVal, announcementRes, attemptRes, tryoutRes, allAttemptsRes, subjectRes] = await Promise.all([
+                    updateStreak(),
                     supabase
                         .from('announcements')
                         .select('*')
                         .eq('is_active', true)
+
                         .or(user?.class_id ? `target_class_id.is.null,target_class_id.eq.${user.class_id}` : 'target_class_id.is.null')
                         .order('created_at', { ascending: false })
                         .limit(5),
@@ -78,13 +117,14 @@ export default function StudentDashboard() {
                 if (attemptRes.data) setRecentAttempts(attemptRes.data);
                 if (tryoutRes.data) setUpcomingTryouts(tryoutRes.data);
 
-                if (allAttemptsRes.data && allAttemptsRes.data.length > 0) {
+                if (allAttemptsRes.data) {
                     const scores = allAttemptsRes.data.map((a) => a.score || 0);
                     setStats({
                         totalAttempts: scores.length,
-                        avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-                        bestScore: Math.round(Math.max(...scores)),
+                        avgScore: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+                        bestScore: scores.length > 0 ? Math.round(Math.max(...scores)) : 0,
                         totalSubjects: subjectRes.count || 0,
+                        streak: streakVal || 0,
                     });
                 }
             } catch (err) {
@@ -176,11 +216,18 @@ export default function StudentDashboard() {
                             value={stats.bestScore}
                             icon={<Trophy className="w-5 h-5" />}
                         />
-                        <StatCard
-                            label={t.studentDashboard.subjects}
-                            value={stats.totalSubjects}
-                            icon={<BookOpen className="w-5 h-5" />}
-                        />
+                        <div className="relative p-4 rounded-xl border border-orange-500/20 bg-orange-500/5 group hover:bg-orange-500/10 transition-colors flex flex-col justify-between h-full min-h-25">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className="text-sm font-medium text-foreground/50">{t.studentDashboard.streakLabel}</span>
+                                <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400 group-hover:scale-110 transition-transform">
+                                    <Zap className="w-5 h-5" strokeWidth={2.5} />
+                                </div>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold text-foreground">{stats.streak}</span>
+                                <span className="text-xs text-foreground/40 font-medium">{t.studentDashboard.streakDays}</span>
+                            </div>
+                        </div>
                     </motion.div>
 
                     <div className="grid lg:grid-cols-3 gap-6">

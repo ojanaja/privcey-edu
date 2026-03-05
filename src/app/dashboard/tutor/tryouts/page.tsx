@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button, Badge, LoadingSpinner } from '@/components/ui';
 import { useTranslation } from '@/lib/i18n';
-import { FileText, Plus, Trash2, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { FileText, Plus, Trash2, Eye, EyeOff, BookOpen, BarChart2, X } from 'lucide-react';
 import type { TryOut, Subject, ClassGroup, Question } from '@/types/database';
 
 export default function TutorTryoutsPage() {
@@ -18,6 +18,11 @@ export default function TutorTryoutsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [selectedTryout, setSelectedTryout] = useState<string | null>(null);
+
+    const [showAnalysis, setShowAnalysis] = useState(false);
+    const [analysisLoading, setAnalysisLoading] = useState(false);
+    const [analysisStats, setAnalysisStats] = useState<any[]>([]);
+
     const [questions, setQuestions] = useState<Question[]>([]);
     const [formData, setFormData] = useState({
         title: '',
@@ -121,6 +126,62 @@ export default function TutorTryoutsPage() {
         setTryouts((prev) => prev.map((t) => (t.id === id ? { ...t, is_active: !current } : t)));
     };
 
+    const fetchAnalysis = async (tryoutId: string) => {
+        setAnalysisLoading(true);
+        setShowAnalysis(true);
+        setSelectedTryout(tryoutId); 
+
+        const supabase = createClient();
+
+        try {
+            const { data: qData } = await supabase
+                .from('questions')
+                .select('id, question_text, correct_answer, difficulty, order_number')
+                .eq('tryout_id', tryoutId)
+                .order('order_number');
+
+            if (!qData || qData.length === 0) {
+                setAnalysisStats([]);
+                setAnalysisLoading(false);
+                return;
+            }
+
+            const qIds = qData.map(q => q.id);
+            const { data: aData } = await supabase
+                .from('student_answers')
+                .select('question_id, selected_answer, is_correct')
+                .in('question_id', qIds);
+
+            const stats = qData.map(q => {
+                const answers = aData?.filter(a => a.question_id === q.id) || [];
+                const total = answers.length;
+                const correct = answers.filter(a => a.is_correct).length;
+                const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+                const distribution = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+                answers.forEach(a => {
+                    const ans = a.selected_answer as keyof typeof distribution;
+                    if (ans && distribution[ans] !== undefined) distribution[ans]++;
+                });
+
+                return {
+                    ...q,
+                    total,
+                    correct,
+                    accuracy,
+                    distribution,
+                    errorRate: 100 - accuracy
+                };
+            }).sort((a, b) => b.errorRate - a.errorRate); 
+
+            setAnalysisStats(stats);
+        } catch (error) {
+            console.error('Error fetching analysis:', error);
+        } finally {
+            setAnalysisLoading(false);
+        }
+    };
+
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
 
     return (
@@ -188,6 +249,13 @@ export default function TutorTryoutsPage() {
                                 <p className="text-xs text-foreground/40">{tryout.subject?.name} · {tryout.duration_minutes} min</p>
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); fetchAnalysis(tryout.id); }}
+                                    className="p-1 mr-2 text-foreground/30 hover:text-accent-1"
+                                    title="Analisis Butir Soal"
+                                >
+                                    <BarChart2 className="w-4 h-4" />
+                                </button>
                                 <Badge variant={tryout.is_active ? 'success' : 'danger'}>{tryout.is_active ? t.common.active : t.common.inactive}</Badge>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); toggleActive(tryout.id, tryout.is_active); }}
@@ -250,6 +318,95 @@ export default function TutorTryoutsPage() {
                     </div>
                 </motion.div>
             )}
+
+            {showAnalysis && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-background border border-white/10 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-card">
+                            <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                                <BarChart2 className="w-5 h-5 text-accent-1" />
+                                Analisis Butir Soal
+                            </h2>
+                            <button onClick={() => setShowAnalysis(false)} className="p-1 hover:bg-white/5 rounded-full text-foreground/50 hover:text-foreground"><X className="w-5 h-5" /></button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 bg-card/50">
+                            {analysisLoading ? <LoadingSpinner /> : (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="admin-card p-4 bg-red-500/10 border-red-500/20">
+                                            <h3 className="text-xs font-semibold text-red-400 mb-1">Soal Tersulit</h3>
+                                            <p className="text-2xl font-bold text-foreground">#{analysisStats[0]?.order_number || '-'}</p>
+                                            <p className="text-xs text-foreground/50">Akurasi: {analysisStats[0]?.accuracy || 0}%</p>
+                                        </div>
+                                        <div className="admin-card p-4 bg-green-500/10 border-green-500/20">
+                                            <h3 className="text-xs font-semibold text-green-400 mb-1">Soal Termudah</h3>
+                                            <p className="text-2xl font-bold text-foreground">#{analysisStats[analysisStats.length - 1]?.order_number || '-'}</p>
+                                            <p className="text-xs text-foreground/50">Akurasi: {analysisStats[analysisStats.length - 1]?.accuracy || 0}%</p>
+                                        </div>
+                                        <div className="admin-card p-4">
+                                            <h3 className="text-xs font-semibold text-accent-1 mb-1">Total Responden</h3>
+                                            <p className="text-2xl font-bold text-foreground">{analysisStats[0]?.total || 0}</p>
+                                            <p className="text-xs text-foreground/50">Siswa</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="admin-card overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-white/5">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left font-medium text-foreground/70">No</th>
+                                                        <th className="px-4 py-3 text-left font-medium text-foreground/70">Soal</th>
+                                                        <th className="px-4 py-3 text-center font-medium text-foreground/70">Tingkat Kesulitan</th>
+                                                        <th className="px-4 py-3 text-center font-medium text-foreground/70">Akurasi</th>
+                                                        <th className="px-4 py-3 text-left font-medium text-foreground/70" style={{ minWidth: '200px' }}>Distribusi Jawaban</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {analysisStats.map((stat) => (
+                                                        <tr key={stat.id} className="hover:bg-white/5 transition-colors">
+                                                            <td className="px-4 py-3 font-medium text-foreground">#{stat.order_number}</td>
+                                                            <td className="px-4 py-3 max-w-xs text-foreground/70 text-xs">
+                                                                <p className="line-clamp-2" title={stat.question_text}>{stat.question_text}</p>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <Badge variant={stat.difficulty === 'hard' ? 'danger' : stat.difficulty === 'easy' ? 'success' : 'warning'}>
+                                                                    {stat.difficulty}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center font-bold text-accent-1">{stat.accuracy}%</td>
+                                                            <td className="px-4 py-3">
+                                                                <div className="flex items-end gap-1 h-12 pt-2">
+                                                                    {['A', 'B', 'C', 'D', 'E'].map(opt => {
+                                                                        const count = stat.distribution?.[opt] || 0;
+                                                                        const height = stat.total > 0 ? (count / stat.total) * 100 : 0;
+                                                                        const isCorrect = stat.correct_answer === opt;
+                                                                        return (
+                                                                            <div key={opt} className="flex-1 flex flex-col justify-end items-center gap-1 group relative h-full" title={`${opt}: ${count} siswa (${Math.round(height)}%)`}>
+                                                                                <div
+                                                                                    className={`w-full rounded-t-sm transition-all min-h-[4px] ${isCorrect ? 'bg-green-500' : 'bg-white/10 group-hover:bg-red-400/50'}`}
+                                                                                    style={{ height: `${height}%` }}
+                                                                                />
+                                                                                <span className={`text-[9px] ${isCorrect ? 'text-green-400 font-bold' : 'text-foreground/30'}`}>{opt}</span>
+                                                                            </div>
+                                                                        )
+                                                                    })}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
         </motion.div>
     );
 }

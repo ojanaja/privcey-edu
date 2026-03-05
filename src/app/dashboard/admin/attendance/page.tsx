@@ -38,6 +38,7 @@ export default function AdminAttendancePage() {
         live_class: { label: t.adminAttendance.liveClass, icon: <Clock className="w-3.5 h-3.5" />, color: 'success' },
         tryout: { label: t.adminAttendance.tryout, icon: <FileText className="w-3.5 h-3.5" />, color: 'warning' },
         emod_access: { label: t.adminAttendance.emod, icon: <BookOpen className="w-3.5 h-3.5" />, color: 'default' },
+        daily_exercise: { label: t.adminAttendance.dailyExercise, icon: <FileText className="w-3.5 h-3.5" />, color: 'info' },
     };
 
     const exportCSV = () => {
@@ -108,6 +109,7 @@ export default function AdminAttendancePage() {
                     <option value="live_class">{t.adminAttendance.liveClass}</option>
                     <option value="tryout">{t.adminAttendance.tryout}</option>
                     <option value="emod_access">{t.adminAttendance.emod}</option>
+                    <option value="daily_exercise">{t.adminAttendance.dailyExercise}</option>
                 </select>
             </div>
 

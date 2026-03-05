@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { LiveClientPage } from './live-client';
 import type { LiveClass } from '@/types/database';
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function LiveClassPage() {
     const supabase = await createClient();

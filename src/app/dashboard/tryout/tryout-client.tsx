@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GlassCard, Button, Badge } from '@/components/ui';
 import { FileText, Clock, Target, ChevronRight, BookOpen } from 'lucide-react';
@@ -8,11 +8,34 @@ import Link from 'next/link';
 import type { TryOut } from '@/types/database';
 import { formatDateTime } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { useAuthStore } from '@/stores/auth-store';
+import { createClient } from '@/lib/supabase/client';
 
 export function TryoutClientPage({ initialTryouts }: { initialTryouts: TryOut[] }) {
     const { t } = useTranslation();
+    const { user } = useAuthStore();
     const [tryouts] = useState<TryOut[]>(initialTryouts);
     const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+    const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        if (!user) return;
+        const supabase = createClient();
+        supabase
+            .from('tryout_attempts')
+            .select('tryout_id')
+            .eq('student_id', user.id)
+            .eq('is_submitted', true)
+            .then(({ data }) => {
+                if (data) setCompletedIds(new Set(data.map((a) => a.tryout_id)));
+            });
+    }, [user]);
+
+    const filteredTryouts = tryouts.filter((tryout) => {
+        if (filter === 'active') return !completedIds.has(tryout.id);
+        if (filter === 'completed') return completedIds.has(tryout.id);
+        return true;
+    });
 
     return (
         <motion.div
@@ -47,9 +70,9 @@ export function TryoutClientPage({ initialTryouts }: { initialTryouts: TryOut[] 
                 ))}
             </div>
 
-            {tryouts.length > 0 ? (
+            {filteredTryouts.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {tryouts.map((tryout, idx) => (
+                    {filteredTryouts.map((tryout, idx) => (
                         <motion.div
                             key={tryout.id}
                             initial={{ opacity: 0, y: 20 }}

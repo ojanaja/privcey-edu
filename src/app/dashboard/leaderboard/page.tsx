@@ -94,14 +94,14 @@ export default function LeaderboardPage() {
                 }
             } catch (err) {
                 console.error('[Leaderboard] Failed to fetch:', err);
-                setError('Gagal memuat leaderboard.');
+                setError(t.leaderboardPage.loadError);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchLeaderboard();
-    }, [page]);
+    }, [page, t]);
 
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
 
@@ -238,16 +238,16 @@ export default function LeaderboardPage() {
                             disabled={page === 0}
                         >
                             <ChevronLeft className="w-4 h-4" />
-                            Sebelumnya
+                            {t.leaderboardPage.previous}
                         </Button>
-                        <span className="text-xs text-foreground/30">Halaman {page + 1}</span>
+                        <span className="text-xs text-foreground/30">{t.leaderboardPage.page} {page + 1}</span>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => { setPage((p) => p + 1); setIsLoading(true); }}
                             disabled={!hasMore}
                         >
-                            Selanjutnya
+                            {t.leaderboardPage.next}
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>

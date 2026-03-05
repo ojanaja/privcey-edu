@@ -20,7 +20,6 @@ import {
     Target,
     ChevronRight,
     ArrowLeft,
-    Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StrengthensModule, Question } from '@/types/database';
@@ -50,7 +49,8 @@ export default function StrengthensPage() {
                 .select('*, subject:subjects(*), tryout:tryouts(*)')
                 .eq('is_active', true);
 
-            if (moduleData) setModules(moduleData);
+            setModules(moduleData || []);
+
             setIsLoading(false);
         };
 
@@ -107,15 +107,15 @@ export default function StrengthensPage() {
     }, [selectedModule, resetGame]);
 
     const handlePlayAgain = useCallback(async () => {
-        if (!selectedModule) return;
+        const currentModule = selectedModule as StrengthensModule;
         const store = useQuizGameStore.getState();
         if (store.score > 0) {
             setHighScores((prev) => ({
                 ...prev,
-                [selectedModule.id]: Math.max(prev[selectedModule.id] || 0, store.score),
+                [currentModule.id]: Math.max(prev[currentModule.id] || 0, store.score),
             }));
         }
-        await handleStartGame(selectedModule);
+        await handleStartGame(currentModule);
     }, [selectedModule, handleStartGame]);
 
     if (isLoading) return <LoadingSpinner className="min-h-[50vh]" />;
