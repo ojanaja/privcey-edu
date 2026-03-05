@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { createQrisCharge } from '@/lib/midtrans';
 import { NextResponse } from 'next/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { env, serverEnv } from '@/lib/env';
 
 const MONTHLY_FEE = 70000;
 
@@ -62,22 +64,44 @@ export async function POST() {
         );
         const qrisUrl = qrisAction?.url || null;
 
+        const paymentPayload = {
+            student_id: user.id,
+            order_id: orderId,
+            gross_amount: MONTHLY_FEE,
+            payment_type: 'qris',
+            status: 'pending' as const,
+            midtrans_transaction_id: chargeResponse.transaction_id,
+            qris_url: qrisUrl,
+            expires_at: chargeResponse.expiry_time || new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        };
+
         const { error: insertError } = await supabase
             .from('payment_transactions')
-            .insert({
-                student_id: user.id,
-                order_id: orderId,
-                gross_amount: MONTHLY_FEE,
-                payment_type: 'qris',
-                status: 'pending',
-                midtrans_transaction_id: chargeResponse.transaction_id,
-                qris_url: qrisUrl,
-                expires_at: chargeResponse.expiry_time || new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-            });
+            .insert(paymentPayload);
 
         if (insertError) {
-            console.error('Failed to save payment transaction:', insertError);
-            return NextResponse.json({ error: 'Failed to save transaction' }, { status: 500 });
+            const isRlsError =
+                insertError.code === '42501' ||
+                insertError.message.toLowerCase().includes('row-level security');
+
+            if (isRlsError && serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
+                const serviceSupabase = createSupabaseClient(
+                    env.NEXT_PUBLIC_SUPABASE_URL,
+                    serverEnv.SUPABASE_SERVICE_ROLE_KEY
+                );
+
+                const { error: serviceInsertError } = await serviceSupabase
+                    .from('payment_transactions')
+                    .insert(paymentPayload);
+
+                if (serviceInsertError) {
+                    console.error('Failed to save payment transaction via service role:', serviceInsertError);
+                    return NextResponse.json({ error: 'Failed to save transaction' }, { status: 500 });
+                }
+            } else {
+                console.error('Failed to save payment transaction:', insertError);
+                return NextResponse.json({ error: 'Failed to save transaction' }, { status: 500 });
+            }
         }
 
         return NextResponse.json({

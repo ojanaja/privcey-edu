@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const createQrisChargeMock = vi.fn()
 const createClientMock = vi.fn()
+const createSupabaseClientMock = vi.fn()
 
 vi.mock('@/lib/midtrans', () => ({
     createQrisCharge: createQrisChargeMock,
@@ -9,6 +10,21 @@ vi.mock('@/lib/midtrans', () => ({
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: createClientMock,
+}))
+
+vi.mock('@supabase/supabase-js', () => ({
+    createClient: createSupabaseClientMock,
+}))
+
+vi.mock('@/lib/env', () => ({
+    env: {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+    },
+    serverEnv: {
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+        MIDTRANS_SERVER_KEY: 'midtrans-key',
+        MIDTRANS_IS_PRODUCTION: 'false',
+    },
 }))
 
 type UserResult = { user: { id: string } | null }
@@ -87,6 +103,11 @@ function buildSupabaseMock(options?: {
 describe('POST /api/payment/create-qris', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        createSupabaseClientMock.mockReturnValue({
+            from: vi.fn().mockReturnValue({
+                insert: vi.fn().mockResolvedValue({ error: null }),
+            }),
+        })
     })
 
     it('returns 401 when unauthenticated', async () => {
@@ -228,6 +249,33 @@ describe('POST /api/payment/create-qris', () => {
 
         expect(response.status).toBe(500)
         expect(body).toEqual({ error: 'Failed to save transaction' })
+    })
+
+    it('retries insert with service role when blocked by RLS', async () => {
+        createQrisChargeMock.mockResolvedValue({
+            transaction_id: 'trx-rls',
+            actions: [{ name: 'generate-qr-code', url: 'https://midtrans.example/rls' }],
+            expiry_time: '2030-01-01 00:00:00',
+        })
+
+        const serviceInsert = vi.fn().mockResolvedValue({ error: null })
+        const serviceFrom = vi.fn().mockReturnValue({ insert: serviceInsert })
+        createSupabaseClientMock.mockReturnValue({ from: serviceFrom })
+
+        const supabase = buildSupabaseMock({
+            insertResult: { error: { message: 'new row violates row-level security policy', code: '42501' } },
+        })
+        createClientMock.mockResolvedValue(supabase)
+        const { POST } = await import('./route')
+
+        const response = await POST()
+        const body = await response.json()
+
+        expect(response.status).toBe(200)
+        expect(body.success).toBe(true)
+        expect(createSupabaseClientMock).toHaveBeenCalledTimes(1)
+        expect(serviceFrom).toHaveBeenCalledWith('payment_transactions')
+        expect(serviceInsert).toHaveBeenCalledTimes(1)
     })
 
     it('returns 500 when provider throws', async () => {
