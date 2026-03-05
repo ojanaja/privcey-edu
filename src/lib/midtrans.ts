@@ -9,6 +9,10 @@ function getBaseUrl() {
 }
 
 function getAuthHeader() {
+    if (!serverEnv.MIDTRANS_SERVER_KEY) {
+        throw new Error('Missing MIDTRANS_SERVER_KEY environment variable');
+    }
+
     return 'Basic ' + Buffer.from(serverEnv.MIDTRANS_SERVER_KEY + ':').toString('base64');
 }
 

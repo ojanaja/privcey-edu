@@ -92,6 +92,14 @@ export async function POST() {
         });
     } catch (err) {
         console.error('Midtrans charge error:', err);
+
+        if (err instanceof Error && err.message.includes('MIDTRANS_SERVER_KEY')) {
+            return NextResponse.json(
+                { error: 'Payment configuration error: MIDTRANS_SERVER_KEY is not set' },
+                { status: 500 }
+            );
+        }
+
         return NextResponse.json(
             { error: 'Failed to create payment. Please try again.' },
             { status: 500 }

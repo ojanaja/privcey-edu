@@ -99,6 +99,23 @@ describe('midtrans', () => {
         );
     });
 
+    it('throws when MIDTRANS_SERVER_KEY is missing', async () => {
+        process.env.MIDTRANS_SERVER_KEY = '';
+
+        const { createQrisCharge } = await import('@/lib/midtrans');
+
+        await expect(
+            createQrisCharge({
+                orderId: 'ORDER-NO-KEY',
+                grossAmount: 25000,
+                customerName: 'John',
+                customerEmail: 'john@example.com',
+            }),
+        ).rejects.toThrow('Missing MIDTRANS_SERVER_KEY environment variable');
+
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     it('verifies Midtrans signature hash', async () => {
         const { verifySignature } = await import('@/lib/midtrans');
         const signature = verifySignature('ORDER-1', '200', '10000', 'secret-key');

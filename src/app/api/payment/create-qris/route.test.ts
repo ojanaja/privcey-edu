@@ -243,4 +243,18 @@ describe('POST /api/payment/create-qris', () => {
         expect(response.status).toBe(500)
         expect(body).toEqual({ error: 'Failed to create payment. Please try again.' })
     })
+
+    it('returns config error when MIDTRANS_SERVER_KEY is missing', async () => {
+        createQrisChargeMock.mockRejectedValue(new Error('Missing MIDTRANS_SERVER_KEY environment variable'))
+
+        const supabase = buildSupabaseMock()
+        createClientMock.mockResolvedValue(supabase)
+        const { POST } = await import('./route')
+
+        const response = await POST()
+        const body = await response.json()
+
+        expect(response.status).toBe(500)
+        expect(body).toEqual({ error: 'Payment configuration error: MIDTRANS_SERVER_KEY is not set' })
+    })
 })
