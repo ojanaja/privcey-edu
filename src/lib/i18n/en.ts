@@ -198,6 +198,8 @@ export const en: Translations = {
         quickActions: 'Quick Actions',
         doTryout: 'Do Try Out',
         dailyExercise: 'Daily Exercise',
+        streakLabel: 'Study Streak',
+        streakDays: 'Days',
     },
 
     adminDashboard: {
@@ -280,6 +282,7 @@ export const en: Translations = {
         liveClass: 'Live Class',
         tryout: 'Try Out',
         emod: 'E-Module',
+        dailyExercise: 'Daily Exercise',
         noData: 'No attendance data',
         csvHeaders: {
             studentName: 'Student Name',
@@ -461,6 +464,10 @@ export const en: Translations = {
         you: 'You',
         tryoutCount: 'try outs',
         noData: 'No leaderboard data yet',
+        previous: 'Previous',
+        next: 'Next',
+        page: 'Page',
+        loadError: 'Failed to load leaderboard.',
     },
 
     liveClassPage: {
@@ -515,6 +522,8 @@ export const en: Translations = {
         noQuizGames: 'No Quiz Games Yet',
         noQuizGamesDesc:
             'STRENGTHENS quiz game modules will be added by tutors soon. Stay tuned! 🎮',
+        lockedModules: 'Locked Modules',
+        lockedDesc: 'These modules unlock automatically when your Try Out score is below the passing grade.',
         preparingQuiz: 'Preparing Quiz...',
         loadingQuestions: 'Loading questions 🎲',
     },

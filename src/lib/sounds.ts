@@ -21,7 +21,6 @@ function playTone(
     duration: number,
     type: OscillatorType = 'sine',
     volume: number = 0.15,
-    fadeOut: boolean = true,
 ) {
     try {
         const ctx = getAudioContext();
@@ -31,10 +30,7 @@ function playTone(
         osc.type = type;
         osc.frequency.setValueAtTime(frequency, ctx.currentTime);
         gain.gain.setValueAtTime(volume, ctx.currentTime);
-
-        if (fadeOut) {
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-        }
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
         osc.connect(gain);
         gain.connect(ctx.destination);

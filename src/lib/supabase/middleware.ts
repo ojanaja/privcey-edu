@@ -103,7 +103,7 @@ export async function updateSession(request: NextRequest) {
             const premiumPaths = ['/dashboard/tryout', '/dashboard/emod', '/dashboard/vod', '/dashboard/live'];
             const isPremiumPath = premiumPaths.some(p => request.nextUrl.pathname.startsWith(p));
 
-            if (profile.role === 'student' && profile.payment_status === 'expired' && isPremiumPath) {
+            if (profile.role === 'student' && (profile.payment_status === 'expired' || profile.payment_status === 'pending') && isPremiumPath) {
                 const url = request.nextUrl.clone();
                 url.pathname = '/dashboard/payment-required';
                 return NextResponse.redirect(url);

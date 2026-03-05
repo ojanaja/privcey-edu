@@ -1,4 +1,5 @@
 import { serverEnv } from '@/lib/env';
+import crypto from 'crypto';
 
 const SANDBOX_URL = 'https://api.sandbox.midtrans.com/v2';
 const PRODUCTION_URL = 'https://api.midtrans.com/v2';
@@ -93,7 +94,6 @@ export async function getTransactionStatus(orderId: string): Promise<MidtransSta
 }
 
 export function verifySignature(orderId: string, statusCode: string, grossAmount: string, serverKey: string): string {
-    const crypto = require('crypto');
     return crypto
         .createHash('sha512')
         .update(orderId + statusCode + grossAmount + serverKey)

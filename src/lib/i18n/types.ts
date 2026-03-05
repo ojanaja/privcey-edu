@@ -167,6 +167,8 @@ export interface Translations {
         quickActions: string;
         doTryout: string;
         dailyExercise: string;
+        streakLabel: string;
+        streakDays: string;
     };
 
     adminDashboard: {
@@ -249,6 +251,7 @@ export interface Translations {
         liveClass: string;
         tryout: string;
         emod: string;
+        dailyExercise: string;
         noData: string;
         csvHeaders: {
             studentName: string;
@@ -420,6 +423,10 @@ export interface Translations {
         you: string;
         tryoutCount: string;
         noData: string;
+        previous: string;
+        next: string;
+        page: string;
+        loadError: string;
     };
 
     liveClassPage: {
@@ -469,6 +476,8 @@ export interface Translations {
         modulesPlayed: string;
         noQuizGames: string;
         noQuizGamesDesc: string;
+        lockedModules: string;
+        lockedDesc: string;
         preparingQuiz: string;
         loadingQuestions: string;
     };

@@ -198,6 +198,8 @@ export const id: Translations = {
         quickActions: 'Aksi Cepat',
         doTryout: 'Kerjakan Try Out',
         dailyExercise: 'Latihan Harian',
+        streakLabel: 'Study Streak',
+        streakDays: 'Hari',
     },
 
     adminDashboard: {
@@ -280,6 +282,7 @@ export const id: Translations = {
         liveClass: 'Live Class',
         tryout: 'Try Out',
         emod: 'E-Modul',
+        dailyExercise: 'Latihan Harian',
         noData: 'Tidak ada data kehadiran',
         csvHeaders: {
             studentName: 'Nama Siswa',
@@ -461,6 +464,10 @@ export const id: Translations = {
         you: 'Kamu',
         tryoutCount: 'try out',
         noData: 'Belum ada data leaderboard',
+        previous: 'Sebelumnya',
+        next: 'Selanjutnya',
+        page: 'Halaman',
+        loadError: 'Gagal memuat leaderboard.',
     },
 
     liveClassPage: {
@@ -515,6 +522,8 @@ export const id: Translations = {
         noQuizGames: 'Belum Ada Quiz Game',
         noQuizGamesDesc:
             'Modul STRENGTHENS quiz game akan segera ditambahkan oleh tutor. Stay tuned! 🎮',
+        lockedModules: 'Modul Terkunci',
+        lockedDesc: 'Modul ini terbuka otomatis jika nilai Try Out kamu di bawah KKM.',
         preparingQuiz: 'Menyiapkan Quiz...',
         loadingQuestions: 'Loading soal-soal 🎲',
     },
