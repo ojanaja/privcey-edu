@@ -10,6 +10,8 @@ export interface Profile {
     is_active: boolean;
     payment_status: 'active' | 'expired' | 'pending';
     payment_expires_at: string | null;
+    streak_count?: number;
+    last_activity_at?: string;
     created_at: string;
     updated_at: string;
 }

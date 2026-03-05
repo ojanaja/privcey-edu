@@ -14,7 +14,7 @@ CREATE TYPE payment_status AS ENUM ('active', 'expired', 'pending');
 CREATE TYPE difficulty_level AS ENUM ('easy', 'medium', 'hard');
 CREATE TYPE answer_option AS ENUM ('A', 'B', 'C', 'D', 'E');
 CREATE TYPE announcement_type AS ENUM ('info', 'warning', 'success', 'urgent');
-CREATE TYPE activity_type AS ENUM ('vod_watch', 'live_class', 'tryout', 'emod_access');
+CREATE TYPE activity_type AS ENUM ('vod_watch', 'live_class', 'tryout', 'emod_access', 'daily_exercise');
 
 -- =========================
 -- TABLES
@@ -41,6 +41,8 @@ CREATE TABLE profiles (
   is_active BOOLEAN DEFAULT true,
   payment_status payment_status DEFAULT 'pending',
   payment_expires_at TIMESTAMPTZ,
+  streak_count INTEGER DEFAULT 0,
+  last_activity_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
