@@ -80,6 +80,14 @@ export async function POST() {
             .insert(paymentPayload);
 
         if (insertError) {
+            if (insertError.code === 'PGRST205') {
+                console.error('Missing payment_transactions table in schema cache:', insertError);
+                return NextResponse.json(
+                    { error: 'Database migration missing: payment_transactions table not found' },
+                    { status: 500 }
+                );
+            }
+
             const isRlsError =
                 insertError.code === '42501' ||
                 insertError.message.toLowerCase().includes('row-level security');

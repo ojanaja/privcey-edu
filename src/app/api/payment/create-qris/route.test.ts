@@ -251,6 +251,31 @@ describe('POST /api/payment/create-qris', () => {
         expect(body).toEqual({ error: 'Failed to save transaction' })
     })
 
+    it('returns migration error when payment_transactions table is missing', async () => {
+        createQrisChargeMock.mockResolvedValue({
+            transaction_id: 'trx-missing-table',
+            actions: [{ name: 'generate-qr-code', url: 'https://midtrans.example/missing-table' }],
+            expiry_time: '2030-01-01 00:00:00',
+        })
+
+        const supabase = buildSupabaseMock({
+            insertResult: {
+                error: {
+                    code: 'PGRST205',
+                    message: "Could not find the table 'public.payment_transactions' in the schema cache",
+                },
+            },
+        })
+        createClientMock.mockResolvedValue(supabase)
+        const { POST } = await import('./route')
+
+        const response = await POST()
+        const body = await response.json()
+
+        expect(response.status).toBe(500)
+        expect(body).toEqual({ error: 'Database migration missing: payment_transactions table not found' })
+    })
+
     it('retries insert with service role when blocked by RLS', async () => {
         createQrisChargeMock.mockResolvedValue({
             transaction_id: 'trx-rls',
